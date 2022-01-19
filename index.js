@@ -58,11 +58,17 @@ class instance extends instance_skel {
 		let sceneNumber = parseInt(opt.sceneNumber)
 		let cmd = { buffers: [] }
 
-		switch (
-			action.action
-		) {
+		switch (action.action) {
 			case 'scene_recall':
-				cmd.buffers = [Buffer.from([0xB0, 0, sceneNumber < 128 ? 0x00: sceneNumber < 256 ? 0x01 : sceneNumber < 384 ? 0x02 : 0x03, 0xc0, sceneNumber])]
+				cmd.buffers = [
+					Buffer.from([
+						0xb0,
+						0,
+						sceneNumber < 128 ? 0x00 : sceneNumber < 256 ? 0x01 : sceneNumber < 384 ? 0x02 : 0x03,
+						0xc0,
+						sceneNumber,
+					]),
+				]
 				break
 			case 'mute_input':
 				cmd.buffers = [Buffer.from([0x90, channel, opt.mute ? 0x7f : 0x3f, 0x90, channel, 0])]
@@ -72,23 +78,13 @@ class instance extends instance_skel {
 				break
 		}
 
-		if (cmd.buffers.length == 0) {
-			// Mute or Fader Level actions
-			if (action.action.slice(0, 4) == 'mute') {
-				
-			} else {
-				let faderLevel = parseInt(opt.level)
-				cmd.buffers = [Buffer.from([0xb0 + inputZone, 0x63, channel, 0xb0 + inputZone, 0x62, 0x17, 0xb0 + inputZone, 0x06, faderLevel])]
+		if (cmd.buffers.length != 0) {
+			for (let i = 0; i < cmd.buffers.length; i++) {
+				if (this.midiSocket !== undefined) {
+					this.log('debug', `sending ${cmd.buffers[i].toString('hex')} via MIDI TCP @${this.config.host}`)
+					this.midiSocket.write(cmd.buffers[i])
+				}
 			}
-		}
-
-		// console.log(cmd);
-
-		for (let i = 0; i < cmd.buffers.length; i++) {
-			if (this.midiSocket !== undefined) {
-				this.log('debug', `sending ${cmd.buffers[i].toString('hex')} via MIDI TCP @${this.config.host}`)
-				this.midiSocket.write(cmd.buffers[i])
-			} 
 		}
 	}
 
@@ -151,7 +147,6 @@ class instance extends instance_skel {
 	 * @since 1.2.0
 	 */
 	init_tcp() {
-
 		if (this.midiSocket !== undefined) {
 			this.midiSocket.destroy()
 			delete this.midiSocket
@@ -166,6 +161,12 @@ class instance extends instance_skel {
 
 			this.midiSocket.on('error', (err) => {
 				this.log('error', 'MIDI error: ' + err.message)
+			})
+
+			this.midiSocket.on('data', (data) => {
+				for (let i = 0; i < data.length; i++) {
+					this.log('debug', `received ${data[i].toString('hex')}`)
+				}
 			})
 
 			this.midiSocket.on('connect', () => {
