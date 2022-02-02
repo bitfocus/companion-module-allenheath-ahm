@@ -1,11 +1,18 @@
 {
 	"name": "allenheath-ahm",
-	"legacy": ["allenheath-ahm"],
+	"legacy": [
+		"allenheath-ahm"
+	],
 	"version": "0.0.1",
 	"api_version": "1.0.0",
-	"keywords": ["Audio", "Sound"],
+	"keywords": [
+		"Audio",
+		"Sound"
+	],
 	"manufacturer": "Allen & Heath",
-	"product": ["AHM"],
+	"product": [
+		"AHM"
+	],
 	"shortname": "AHM",
 	"description": "Allen & Heath AHM module for Companion",
 	"main": "index.js",
@@ -13,5 +20,13 @@
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"author": "Jeffrey Davidsz <jeffrey.davidsz@vicreo.eu>",
-	"license": "MIT"
+	"license": "MIT",
+	"homepage": "https://github.com/bitfocus/companion-module-allenheath-ahm#readme",
+	"bugs": {
+		"url": "https://github.com/bitfocus/companion-module-allenheath-ahm/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/bitfocus/companion-module-allenheath-ahm.git"
+	}
 }
