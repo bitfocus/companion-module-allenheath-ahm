@@ -13,23 +13,23 @@ module.exports = {
 
 		let actions = {}
 
-		this.sceneOptions = (name , qty) => {
+		this.listOptions = (name, qty, offset) => {
 			this.CHOICES = []
 			for (let i = 1; i <= qty; i++) {
-				this.CHOICES.push({ label: `${name} ${i}`, id: i -1 })
+				this.CHOICES.push({ label: `${name} ${i}`, id: i + offset })
 			}
 			return [
 				{
 					type: 'dropdown',
-					label: 'Scene',
-					id: 'sceneNumber',
+					label: name,
+					id: 'number',
 					default: 0,
 					choices: this.CHOICES,
 					minChoicesForSearch: 0,
 				},
 			]
 		}
-		
+
 		this.muteOptions = (name, qty, offset) => {
 			this.CHOICES = []
 			for (let i = 1; i <= qty; i++) {
@@ -53,21 +53,30 @@ module.exports = {
 			]
 		}
 
-		// Actions for iLive
 		actions['mute_input'] = {
 			label: 'Mute Input',
 			options: this.muteOptions('Mute Channel', 64, -1),
 		}
-		
+
 		actions['mute_zone'] = {
 			label: 'Mute Zone',
 			options: this.muteOptions('Mute zone', 64, -1),
 		}
-		
+
 		actions['scene_recall'] = {
 			label: 'Recall a scene',
-			options: this.sceneOptions('Recall scene', 500)
+			options: this.listOptions('Recall scene', 500, -1),
 		}
+
+		actions['input_to_zone'] = {
+			label: 'input to zone',
+			options: this.muteOptions('Mute Channel', 64, -1).concat(this.listOptions('zone', 64, -1))
+		}
+
+		// actions['get_phantom'] = {
+		// 	label: 'Get phantom info',
+		// 	options: this.listOptions('Input', 64, -1),
+		// }
 
 		return actions
 	},

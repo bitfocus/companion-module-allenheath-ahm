@@ -9,7 +9,7 @@ let tcp = require('../../tcp')
 let instance_skel = require('../../instance_skel')
 let actions = require('./actions')
 const MIDI_PORT = 51325
-const TCPTLS = 51321
+const TCPTLS = 51327
 
 /**
  * @extends instance_skel
@@ -55,26 +55,26 @@ class instance extends instance_skel {
 	action(action) {
 		let opt = action.options
 		let channel = parseInt(opt.inputChannel)
-		let sceneNumber = parseInt(opt.sceneNumber)
+		let presetNumber = parseInt(opt.number)
+		let zoneNumber = parseInt(opt.number)
+
 		let cmd = { buffers: [] }
 
 		switch (action.action) {
 			case 'scene_recall':
-				cmd.buffers = [
-					Buffer.from([
-						0xb0,
-						0,
-						sceneNumber < 128 ? 0x00 : sceneNumber < 256 ? 0x01 : sceneNumber < 384 ? 0x02 : 0x03,
-						0xc0,
-						sceneNumber,
-					]),
-				]
+				cmd.buffers = [Buffer.from([0xb0,0x00,presetNumber < 128 ? 0x00 : presetNumber < 256 ? 0x01 : presetNumber < 384 ? 0x02 : 0x03, 0xc0, presetNumber])]
 				break
 			case 'mute_input':
 				cmd.buffers = [Buffer.from([0x90, channel, opt.mute ? 0x7f : 0x3f, 0x90, channel, 0])]
 				break
 			case 'mute_zone':
 				cmd.buffers = [Buffer.from([0x91, channel, opt.mute ? 0x7f : 0x3f, 0x91, channel, 0])]
+				break
+			case 'input_to_zone':
+				cmd.buffers = [Buffer.from([0xF0, 0x00, 0x00, 0x1A, 0x50, 0x12, 0x01, 0x00, 0x00, 0x03, channel, 0x01, zoneNumber, opt.mute ? 0x7f : 0x3f, 0xF7])]
+				break
+			case 'get_phantom':
+				cmd.buffers = [Buffer.from([0xF0, 0x00, 0x00, 0x1A, 0x50, 0x12, 0x01, 0x00, 0x00, 0x01, 0x0B, 0x1B, channel, 0xF7])]
 				break
 		}
 
@@ -164,9 +164,11 @@ class instance extends instance_skel {
 			})
 
 			this.midiSocket.on('data', (data) => {
-				for (let i = 0; i < data.length; i++) {
-					this.log('debug', `received ${data[i].toString('hex')}`)
-				}
+				console.log('joehoe')
+				console.log(data)
+				// for (let i = 0; i < data.length; i++) {
+				// 	this.log('debug', `received ${data[i].toString('utf8')}`)
+				// }
 			})
 
 			this.midiSocket.on('connect', () => {
