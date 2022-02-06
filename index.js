@@ -8,13 +8,14 @@
 let tcp = require('../../tcp')
 let instance_skel = require('../../instance_skel')
 let actions = require('./actions')
+let feedbacks = require('./feedbacks')
+let presets = require('./presets')
 const MIDI_PORT = 51325
-const TCPTLS = 51327
 
 /**
  * @extends instance_skel
- * @since 1.2.0
- * @author Andrew Broughton <andy@checkcheckonetwo.com>
+ * @since 1.0.0
+ * @author Jeffrey Davidsz
  */
 
 class instance extends instance_skel {
@@ -31,9 +32,28 @@ class instance extends instance_skel {
 
 		Object.assign(this, {
 			...actions,
+			...feedbacks,
+			...presets
 		})
+
+		let numberOfInputs = 64
+		let numberOfZones = 64
+		this.inputsMute = this.createArray(numberOfInputs)
+		this.inputsToZonesMute = this.createArray(numberOfInputs, numberOfZones)
+		this.zonesMute = this.createArray(numberOfZones)
 	}
 
+	createArray(size, extraArrayLength) {
+		let array = new Array(size)
+		for (let index = 0; index < array.length; index++) {
+			if (extraArrayLength) {
+				array[index] = []
+			} else {
+				array[index] = 0
+			}
+		}
+		return array
+	}
 	/**
 	 * Setup the actions.
 	 *
@@ -62,19 +82,53 @@ class instance extends instance_skel {
 
 		switch (action.action) {
 			case 'scene_recall':
-				cmd.buffers = [Buffer.from([0xb0,0x00,presetNumber < 128 ? 0x00 : presetNumber < 256 ? 0x01 : presetNumber < 384 ? 0x02 : 0x03, 0xc0, presetNumber])]
+				cmd.buffers = [
+					Buffer.from([
+						0xb0,
+						0x00,
+						presetNumber < 128 ? 0x00 : presetNumber < 256 ? 0x01 : presetNumber < 384 ? 0x02 : 0x03,
+						0xc0,
+						presetNumber,
+					]),
+				]
 				break
 			case 'mute_input':
 				cmd.buffers = [Buffer.from([0x90, channel, opt.mute ? 0x7f : 0x3f, 0x90, channel, 0])]
+				this.inputsMute[channel] = opt.mute ? 1 : 0
+				this.checkFeedbacks('inputMute')
 				break
 			case 'mute_zone':
 				cmd.buffers = [Buffer.from([0x91, channel, opt.mute ? 0x7f : 0x3f, 0x91, channel, 0])]
+				this.zonesMute[channel] = opt.mute ? 1 : 0
+				this.checkFeedbacks('zoneMute')
 				break
 			case 'input_to_zone':
-				cmd.buffers = [Buffer.from([0xF0, 0x00, 0x00, 0x1A, 0x50, 0x12, 0x01, 0x00, 0x00, 0x03, channel, 0x01, zoneNumber, opt.mute ? 0x7f : 0x3f, 0xF7])]
+				cmd.buffers = [
+					Buffer.from([
+						0xf0,
+						0x00,
+						0x00,
+						0x1a,
+						0x50,
+						0x12,
+						0x01,
+						0x00,
+						0x00,
+						0x03,
+						channel,
+						0x01,
+						zoneNumber,
+						opt.mute ? 0x7f : 0x3f,
+						0xf7,
+					]),
+				]
+				this.inputsToZonesMute[channel][zoneNumber] = opt.mute ? 1 : 0
+				this.checkFeedbacks('inputToZoneMute')
 				break
 			case 'get_phantom':
-				cmd.buffers = [Buffer.from([0xF0, 0x00, 0x00, 0x1A, 0x50, 0x12, 0x01, 0x00, 0x00, 0x01, 0x0B, 0x1B, channel, 0xF7])]
+				cmd.buffers = [
+					Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12, 0x01, 0x00, 0x00, 0x01, 0x0b, 0x1b, channel, 0xf7]),
+				]
 				break
 		}
 
@@ -138,10 +192,20 @@ class instance extends instance_skel {
 	 */
 	init() {
 		this.updateConfig(this.config)
+		this.initFeedbacks()
+		this.initPresets()
+	}
+
+	initFeedbacks() {
+		this.setFeedbackDefinitions(this.getFeedbacks(this.inputsMute, this.zonesMute, this.inputsToZonesMute))
+	}
+
+	initPresets() {
+		this.setPresetDefinitions(this.getPresets(this.inputsMute, this.zonesMute))
 	}
 
 	/**
-	 * INTERNAL: use setup data to initalize the tcp tcpSocket object.
+	 * INTERNAL: use setup data to initalize the tcpSocket object.
 	 *
 	 * @access protected
 	 * @since 1.2.0
@@ -164,11 +228,7 @@ class instance extends instance_skel {
 			})
 
 			this.midiSocket.on('data', (data) => {
-				console.log('joehoe')
-				console.log(data)
-				// for (let i = 0; i < data.length; i++) {
-				// 	this.log('debug', `received ${data[i].toString('utf8')}`)
-				// }
+				this.processIncomingData(data)
 			})
 
 			this.midiSocket.on('connect', () => {
@@ -184,12 +244,59 @@ class instance extends instance_skel {
 	 * @access public
 	 * @since 1.2.0
 	 */
-	updateConfig(config) {
-		this.config = config
+		 updateConfig(config) {
+			this.config = config
+	
+			this.actions()
+			this.init_tcp()
+		}
+	
 
-		this.actions()
-		this.init_tcp()
+	/**
+	 * Process incoming data.
+	 *
+	 * @param {Object} data - the incoming data
+	 * @access public
+	 * @since 1.2.0
+	 */
+	processIncomingData(data) {
+		console.log(data)
+		// console.log(data[0])
+
+		switch (data[0]) {
+			case 144:
+				// input mute
+				// data[2] 63 == unmute, 127 == mute
+				console.log(`Channel ${data[2] == 63 ? 'unmute' : 'mute'}: ${parseInt(data[1], 16) + 1}`)
+				this.log('debug', `Channel ${parseInt(data[1], 16) + 1} ${data[2] == 63 ? 'unmute' : 'mute'}`)
+				this.inputsMute[parseInt(data[1], 16)] = data[2] == 63 ? 0 : 1
+				this.checkFeedbacks('inputMute')
+				break
+			case 145:
+				// zone mute
+				console.log(`Zone ${data[2] == 63 ? 'unmute' : 'mute'}: ${parseInt(data[1], 16) + 1}`)
+				this.log('debug', `Zone ${parseInt(data[1], 16) + 1} ${data[2] == 63 ? 'unmute' : 'mute'}`)
+				this.zonesMute[parseInt(data[1], 16)] = data[2] == 63 ? 0 : 1
+				this.checkFeedbacks('zoneMute')
+				break
+			case 240:
+				// input to zone mute
+				console.log(
+					`Input ${parseInt(data[10], 16) + 1} to zone Zone ${parseInt(data[12], 16) + 1} ${
+						data[13] == 63 ? 'unmute' : 'mute'
+					}`
+				)
+				this.log(
+					'debug',
+					`Input ${parseInt(data[10], 16) + 1} to zone Zone ${parseInt(data[12], 16) + 1} ${
+						data[13] == 63 ? 'unmute' : 'mute'
+					}`
+				)
+				this.inputsToZonesMute[parseInt(data[10], 16)][parseInt(data[12], 16) + 1] = data[2] == 63 ? 0 : 1
+				this.checkFeedbacks('inputToZoneMute')
+				break
+		}
 	}
-}
 
+}
 exports = module.exports = instance

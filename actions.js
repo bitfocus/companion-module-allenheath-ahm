@@ -55,7 +55,7 @@ module.exports = {
 
 		actions['mute_input'] = {
 			label: 'Mute Input',
-			options: this.muteOptions('Mute Channel', 64, -1),
+			options: this.muteOptions('Mute input', 64, -1),
 		}
 
 		actions['mute_zone'] = {
@@ -69,7 +69,7 @@ module.exports = {
 		}
 
 		actions['input_to_zone'] = {
-			label: 'input to zone',
+			label: 'Mute input to zone',
 			options: this.muteOptions('Mute Channel', 64, -1).concat(this.listOptions('zone', 64, -1))
 		}
 
