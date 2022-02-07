@@ -83,7 +83,7 @@ module.exports = {
 					{
 						type: 'zoneMute',
 						options: {
-							input: index + 1,
+							zone: parseInt(index) + 1,
 						},
 						style: {
 							color: this.rgb(255, 255, 255),
