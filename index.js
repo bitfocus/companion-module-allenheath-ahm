@@ -33,14 +33,55 @@ class instance extends instance_skel {
 		Object.assign(this, {
 			...actions,
 			...feedbacks,
-			...presets
+			...presets,
 		})
 
-		let numberOfInputs = 64
+		this.numberOfInputs = 64
 		let numberOfZones = 64
-		this.inputsMute = this.createArray(numberOfInputs)
-		this.inputsToZonesMute = this.createArray(numberOfInputs, numberOfZones)
+		this.counter = 0
+		this.inputsMute = this.createArray(this.numberOfInputs)
+		this.inputsToZonesMute = this.createArray(this.numberOfInputs, numberOfZones)
 		this.zonesMute = this.createArray(numberOfZones)
+	}
+
+	sleep(ms) {
+		return new Promise((resolve) => setTimeout(resolve, ms))
+	}
+
+	async getMuteInfoFromDevice(length) {
+		for (let index = 0; index < length; index++) {
+			this.getMuteInfo(0, index) // inputs
+			await this.sleep(150)
+			this.getMuteInfo(1, index) // zones
+			await this.sleep(150)
+		}
+		// this.getMuteInfo(channel, 11)
+	}
+
+	getMuteInfo(channel, number) {
+		let cmd = { buffers: [] }
+		cmd.buffers = [
+			Buffer.from([
+				0xf0,
+				0x00,
+				0x00,
+				0x1a,
+				0x50,
+				0x12,
+				0x01,
+				0x00,
+				parseInt(channel),
+				0x01,
+				0x09,
+				parseInt(number),
+				0xf7,
+			]),
+		]
+		for (let i = 0; i < cmd.buffers.length; i++) {
+			if (this.midiSocket !== undefined) {
+				this.midiSocket.write(cmd.buffers[i])
+			}
+		}
 	}
 
 	createArray(size, extraArrayLength) {
@@ -130,6 +171,9 @@ class instance extends instance_skel {
 					Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12, 0x01, 0x00, 0x00, 0x01, 0x0b, 0x1b, channel, 0xf7]),
 				]
 				break
+			case 'get_muteInfo':
+				cmd.buffers = [Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12, 0x01, 0x00, 0x00, 0x01, 0x09, channel, 0xf7])]
+				break
 		}
 
 		if (cmd.buffers.length != 0) {
@@ -205,7 +249,7 @@ class instance extends instance_skel {
 	}
 
 	/**
-	 * INTERNAL: use setup data to initalize the tcpSocket object.
+	 * INTERNAL: use setup data to initialize the tcpSocket object.
 	 *
 	 * @access protected
 	 * @since 1.2.0
@@ -233,6 +277,7 @@ class instance extends instance_skel {
 
 			this.midiSocket.on('connect', () => {
 				this.log('debug', `MIDI Connected to ${this.config.host}`)
+				this.getMuteInfoFromDevice(64)
 			})
 		}
 	}
@@ -244,14 +289,16 @@ class instance extends instance_skel {
 	 * @access public
 	 * @since 1.2.0
 	 */
-		 updateConfig(config) {
-			this.config = config
-	
-			this.actions()
-			this.init_tcp()
-		}
-	
+	updateConfig(config) {
+		this.config = config
 
+		this.actions()
+		this.init_tcp()
+	}
+
+	hexToDec(hexString) {
+		return parseInt(hexString)
+	}
 	/**
 	 * Process incoming data.
 	 *
@@ -261,42 +308,43 @@ class instance extends instance_skel {
 	 */
 	processIncomingData(data) {
 		console.log(data)
-		// console.log(data[0])
 
 		switch (data[0]) {
 			case 144:
 				// input mute
 				// data[2] 63 == unmute, 127 == mute
-				console.log(`Channel ${data[2] == 63 ? 'unmute' : 'mute'}: ${parseInt(data[1], 16) + 1}`)
-				this.log('debug', `Channel ${parseInt(data[1], 16) + 1} ${data[2] == 63 ? 'unmute' : 'mute'}`)
-				this.inputsMute[parseInt(data[1], 16)] = data[2] == 63 ? 0 : 1
+				console.log(`Channel ${data[2] == 63 ? 'unmute' : 'mute'}: ${this.hexToDec(data[1]) + 1}`)
+				// this.log('debug', `Channel ${parseInt(data[1], 16) + 1} ${data[2] == 63 ? 'unmute' : 'mute'}`)
+				this.inputsMute[this.hexToDec(data[1])] = data[2] == 63 ? 0 : 1
 				this.checkFeedbacks('inputMute')
 				break
 			case 145:
 				// zone mute
-				console.log(`Zone ${data[2] == 63 ? 'unmute' : 'mute'}: ${parseInt(data[1], 16) + 1}`)
-				this.log('debug', `Zone ${parseInt(data[1], 16) + 1} ${data[2] == 63 ? 'unmute' : 'mute'}`)
-				this.zonesMute[parseInt(data[1], 16)] = data[2] == 63 ? 0 : 1
+				console.log(`Zone ${data[2] == 63 ? 'unmute' : 'mute'}: ${this.hexToDec(data[1]) + 1}`)
+				this.log('debug', `Zone ${this.hexToDec(data[1]) + 1} ${data[2] == 63 ? 'unmute' : 'mute'}`)
+				this.zonesMute[this.hexToDec(data[1])] = data[2] == 63 ? 0 : 1
 				this.checkFeedbacks('zoneMute')
 				break
 			case 240:
 				// input to zone mute
 				console.log(
-					`Input ${parseInt(data[10], 16) + 1} to zone Zone ${parseInt(data[12], 16) + 1} ${
+					`Input ${this.hexToDec(data[10]) + 1} to zone Zone ${this.hexToDec(data[12]) + 1} ${
 						data[13] == 63 ? 'unmute' : 'mute'
 					}`
 				)
 				this.log(
 					'debug',
-					`Input ${parseInt(data[10], 16) + 1} to zone Zone ${parseInt(data[12], 16) + 1} ${
+					`Input ${this.hexToDec(data[10]) + 1} to zone Zone ${this.hexToDec(data[12]) + 1} ${
 						data[13] == 63 ? 'unmute' : 'mute'
 					}`
 				)
-				this.inputsToZonesMute[parseInt(data[10], 16)][parseInt(data[12], 16) + 1] = data[2] == 63 ? 0 : 1
+				this.inputsToZonesMute[this.hexToDec(data[10])][this.hexToDec(data[12]) + 1] = data[2] == 63 ? 0 : 1
 				this.checkFeedbacks('inputToZoneMute')
+				break
+			default:
+				console.log('Extra data coming in')
 				break
 		}
 	}
-
 }
 exports = module.exports = instance
