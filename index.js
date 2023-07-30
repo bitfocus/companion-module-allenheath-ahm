@@ -1,47 +1,76 @@
-/**
- *
- * Companion instance class for the A&H dLive & iLive Mixers.
- * @version 1.3.4
- *
- */
+import { InstanceBase, Regex, runEntrypoint, InstanceStatus, TCPHelper } from '@companion-module/base'
+import { getActions } from './actions.js'
+import { getPresets } from './presets.js'
+import { getVariables } from './variables.js'
+import { getFeedbacks } from './feedbacks.js'
+import UpgradeScripts from './upgrades.js'
 
-let tcp = require('../../tcp')
-let instance_skel = require('../../instance_skel')
-let actions = require('./actions')
-let feedbacks = require('./feedbacks')
-let presets = require('./presets')
-const MIDI_PORT = 51325
+class AHMInstance extends InstanceBase {
+	constructor(internal) {
+		super(internal)
+	}
 
-/**
- * @extends instance_skel
- * @since 1.0.0
- * @author Jeffrey Davidsz
- */
+	async init(config) {
+		this.config = config
 
-class instance extends instance_skel {
-	/**
-	 * Create an instance.
-	 *
-	 * @param {EventEmitter} system - the brains of the operation
-	 * @param {string} id - the instance ID
-	 * @param {Object} config - saved user configuration parameters
-	 * @since 1.2.0
-	 */
-	constructor(system, id, config) {
-		super(system, id, config)
+		this.updateStatus(InstanceStatus.Connecting)
 
-		Object.assign(this, {
-			...actions,
-			...feedbacks,
-			...presets,
-		})
-
+		const MIDI_PORT = 51325
 		this.numberOfInputs = 64
 		let numberOfZones = 64
 		this.counter = 0
 		this.inputsMute = this.createArray(this.numberOfInputs)
 		this.inputsToZonesMute = this.createArray(this.numberOfInputs, numberOfZones)
 		this.zonesMute = this.createArray(numberOfZones)
+
+		this.initFeedbacks()
+		this.initPresets()
+	}
+
+	async destroy() {
+		if (this.midiSocket !== undefined) {
+			this.midiSocket.destroy()
+		}
+		this.log('debug', 'destroy')
+	}
+
+	async configUpdated(config) {
+		this.config = config
+		this.initActions()
+		this.initTCP()
+	}
+
+	getConfigFields() {
+		return [
+			{
+				type: 'textinput',
+				id: 'host',
+				label: 'Device IP',
+				width: 6,
+				default: '',
+				regex: Regex.IP,
+			},
+		]
+	}
+
+	initVariables() {
+		const variables = getVariables.bind(this)()
+		this.setVariableDefinitions(variables)
+	}
+
+	initFeedbacks() {
+		const feedbacks = getFeedbacks.bind(this)()
+		this.setFeedbackDefinitions(feedbacks)
+	}
+
+	initPresets() {
+		const presets = getPresets.bind(this)()
+		this.setPresetDefinitions(presets)
+	}
+
+	initActions() {
+		const actions = getActions.bind(this)()
+		this.setActionDefinitions(actions)
 	}
 
 	sleep(ms) {
@@ -95,24 +124,7 @@ class instance extends instance_skel {
 		}
 		return array
 	}
-	/**
-	 * Setup the actions.
-	 *
-	 * @param {EventEmitter} system - the brains of the operation
-	 * @access public
-	 * @since 1.2.0
-	 */
-	actions(system) {
-		this.setActions(this.getActions())
-	}
 
-	/**
-	 * Executes the provided action.
-	 *
-	 * @param {Object} action - the action to be executed
-	 * @access public
-	 * @since 1.2.0
-	 */
 	action(action) {
 		let opt = action.options
 		let channel = parseInt(opt.inputChannel)
@@ -186,75 +198,7 @@ class instance extends instance_skel {
 		}
 	}
 
-	/**
-	 * Creates the configuration fields for web config.
-	 *
-	 * @returns {Array} the config fields
-	 * @access public
-	 * @since 1.2.0
-	 */
-	config_fields() {
-		return [
-			{
-				type: 'text',
-				id: 'info',
-				width: 12,
-				label: 'Information',
-				value: 'This module is for the Allen & Heath AHM mixers',
-			},
-			{
-				type: 'textinput',
-				id: 'host',
-				label: 'Target IP',
-				width: 6,
-				default: '192.168.1.70',
-				regex: this.REGEX_IP,
-			},
-		]
-	}
-
-	/**
-	 * Clean up the instance before it is destroyed.
-	 *
-	 * @access public
-	 * @since 1.2.0
-	 */
-	destroy() {
-		if (this.midiSocket !== undefined) {
-			this.midiSocket.destroy()
-		}
-
-		this.log('debug', `destroyed ${this.id}`)
-	}
-
-	/**
-	 * Main initialization function called once the module
-	 * is OK to start doing things.
-	 *
-	 * @access public
-	 * @since 1.2.0
-	 */
-	init() {
-		this.updateConfig(this.config)
-		this.initFeedbacks()
-		this.initPresets()
-	}
-
-	initFeedbacks() {
-		this.setFeedbackDefinitions(this.getFeedbacks(this.inputsMute, this.zonesMute, this.inputsToZonesMute))
-	}
-
-	initPresets() {
-		this.setPresetDefinitions(this.getPresets(this.inputsMute, this.zonesMute))
-	}
-
-	/**
-	 * INTERNAL: use setup data to initialize the tcpSocket object.
-	 *
-	 * @access protected
-	 * @since 1.2.0
-	 */
-	init_tcp() {
+	initTCP() {
 		if (this.midiSocket !== undefined) {
 			this.midiSocket.destroy()
 			delete this.midiSocket
@@ -264,7 +208,7 @@ class instance extends instance_skel {
 			this.midiSocket = new tcp(this.config.host, MIDI_PORT)
 
 			this.midiSocket.on('status_change', (status, message) => {
-				this.status(status, message)
+				this.updateStatus(status, message)
 			})
 
 			this.midiSocket.on('error', (err) => {
@@ -282,30 +226,10 @@ class instance extends instance_skel {
 		}
 	}
 
-	/**
-	 * Process an updated configuration array.
-	 *
-	 * @param {Object} config - the new configuration
-	 * @access public
-	 * @since 1.2.0
-	 */
-	updateConfig(config) {
-		this.config = config
-
-		this.actions()
-		this.init_tcp()
-	}
-
 	hexToDec(hexString) {
 		return parseInt(hexString)
 	}
-	/**
-	 * Process incoming data.
-	 *
-	 * @param {Object} data - the incoming data
-	 * @access public
-	 * @since 1.2.0
-	 */
+
 	processIncomingData(data) {
 		console.log(data)
 
@@ -347,4 +271,5 @@ class instance extends instance_skel {
 		}
 	}
 }
-exports = module.exports = instance
+
+runEntrypoint(AHMInstance, UpgradeScripts)
