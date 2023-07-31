@@ -125,74 +125,21 @@ class AHMInstance extends InstanceBase {
 		return array
 	}
 
-	action(action) {
-		let opt = action.options
-		let channel = parseInt(opt.inputChannel)
-		let presetNumber = parseInt(opt.number)
-		let zoneNumber = parseInt(opt.number)
-
-		let cmd = { buffers: [] }
-
-		switch (action.action) {
-			case 'scene_recall':
-				cmd.buffers = [
-					Buffer.from([
-						0xb0,
-						0x00,
-						presetNumber < 128 ? 0x00 : presetNumber < 256 ? 0x01 : presetNumber < 384 ? 0x02 : 0x03,
-						0xc0,
-						presetNumber,
-					]),
-				]
-				break
-			case 'mute_input':
-				cmd.buffers = [Buffer.from([0x90, channel, opt.mute ? 0x7f : 0x3f, 0x90, channel, 0])]
-				this.inputsMute[channel] = opt.mute ? 1 : 0
-				this.checkFeedbacks('inputMute')
-				break
-			case 'mute_zone':
-				cmd.buffers = [Buffer.from([0x91, channel, opt.mute ? 0x7f : 0x3f, 0x91, channel, 0])]
-				this.zonesMute[channel] = opt.mute ? 1 : 0
-				this.checkFeedbacks('zoneMute')
-				break
-			case 'input_to_zone':
-				cmd.buffers = [
-					Buffer.from([
-						0xf0,
-						0x00,
-						0x00,
-						0x1a,
-						0x50,
-						0x12,
-						0x01,
-						0x00,
-						0x00,
-						0x03,
-						channel,
-						0x01,
-						zoneNumber,
-						opt.mute ? 0x7f : 0x3f,
-						0xf7,
-					]),
-				]
-				this.inputsToZonesMute[channel][zoneNumber] = opt.mute ? 1 : 0
-				this.checkFeedbacks('inputToZoneMute')
-				break
-			case 'get_phantom':
+	/* case 'get_phantom':
 				cmd.buffers = [
 					Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12, 0x01, 0x00, 0x00, 0x01, 0x0b, 0x1b, channel, 0xf7]),
 				]
 				break
 			case 'get_muteInfo':
 				cmd.buffers = [Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12, 0x01, 0x00, 0x00, 0x01, 0x09, channel, 0xf7])]
-				break
-		}
+				break */
 
-		if (cmd.buffers.length != 0) {
-			for (let i = 0; i < cmd.buffers.length; i++) {
+	sendCommand(buffers) {
+		if (buffers.length != 0) {
+			for (let i = 0; i < buffers.length; i++) {
 				if (this.midiSocket !== undefined) {
-					this.log('debug', `sending ${cmd.buffers[i].toString('hex')} via MIDI TCP @${this.config.host}`)
-					this.midiSocket.write(cmd.buffers[i])
+					this.log('debug', `sending ${buffers[i].toString('hex')} via MIDI TCP @${this.config.host}`)
+					this.midiSocket.write(buffers[i])
 				}
 			}
 		}
@@ -208,7 +155,7 @@ class AHMInstance extends InstanceBase {
 			this.midiSocket = new tcp(this.config.host, MIDI_PORT)
 
 			this.midiSocket.on('status_change', (status, message) => {
-				this.updateStatus(status, message)
+				this.updateStatus(status)
 			})
 
 			this.midiSocket.on('error', (err) => {
@@ -221,6 +168,7 @@ class AHMInstance extends InstanceBase {
 
 			this.midiSocket.on('connect', () => {
 				this.log('debug', `MIDI Connected to ${this.config.host}`)
+				this.updateStatus(InstanceStatus.Ok)
 				this.getMuteInfoFromDevice(64)
 			})
 		}

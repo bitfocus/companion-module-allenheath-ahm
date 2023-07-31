@@ -4,7 +4,7 @@ export function getPresets() {
 	let presets = []
 
 	// Mute Inputs
-	for (let index = 0; index < inputsMute.length; index++) {
+	for (let index = 0; index < this.inputsMute.length; index++) {
 		presets.push({
 			type: 'button',
 			category: 'Mute input',
@@ -54,7 +54,7 @@ export function getPresets() {
 	}
 
 	// Mute Zones
-	for (let index = 0; index < zonesMute.length; index++) {
+	for (let index = 0; index < this.zonesMute.length; index++) {
 		presets.push({
 			type: 'button',
 			category: 'Mute zones',
@@ -104,8 +104,8 @@ export function getPresets() {
 	}
 
 	// Mute input to Zone
-	for (let input = 0; input < inputsMute.length; input++) {
-		for (let zone = 0; zone < zonesMute.length; zone++) {
+	for (let input = 0; input < this.inputsMute.length; input++) {
+		for (let zone = 0; zone < this.zonesMute.length; zone++) {
 			presets.push({
 				type: 'button',
 				category: `Mute input ${parseInt(input) + 1} to Zone`,

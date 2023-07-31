@@ -28,7 +28,7 @@ export function getFeedbacks() {
 			},
 		],
 		callback: (feedback, bank) => {
-			if (inputsMute[parseInt(feedback.options.input) - 1] == 1) {
+			if (this.inputsMute[parseInt(feedback.options.input) - 1] == 1) {
 				return {
 					color: feedback.options.fg,
 					bgcolor: feedback.options.bg,
@@ -62,7 +62,7 @@ export function getFeedbacks() {
 			},
 		],
 		callback: (feedback, bank) => {
-			if (zonesMute[parseInt(feedback.options.zone) - 1] == 1) {
+			if (this.zonesMute[parseInt(feedback.options.zone) - 1] == 1) {
 				return {
 					color: feedback.options.fg,
 					bgcolor: feedback.options.bg,
@@ -102,7 +102,7 @@ export function getFeedbacks() {
 			},
 		],
 		callback: (feedback, bank) => {
-			if (inputsToZonesMute[parseInt(feedback.options.input) - 1][parseInt(feedback.options.zone) - 1] == 1) {
+			if (this.inputsToZonesMute[parseInt(feedback.options.input) - 1][parseInt(feedback.options.zone) - 1] == 1) {
 				return {
 					color: feedback.options.fg,
 					bgcolor: feedback.options.bg,
