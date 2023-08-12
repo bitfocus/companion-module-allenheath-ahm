@@ -15,16 +15,18 @@ class AHMInstance extends InstanceBase {
 
 		this.updateStatus(InstanceStatus.Connecting)
 
-		const MIDI_PORT = 51325
+		this.MIDI_PORT = 51325
 		this.numberOfInputs = 64
 		let numberOfZones = 64
 		this.counter = 0
 		this.inputsMute = this.createArray(this.numberOfInputs)
 		this.inputsToZonesMute = this.createArray(this.numberOfInputs, numberOfZones)
 		this.zonesMute = this.createArray(numberOfZones)
-
+		this.initTCP()
+		this.initActions()
 		this.initFeedbacks()
 		this.initPresets()
+		this.initVariables()
 	}
 
 	async destroy() {
@@ -108,7 +110,7 @@ class AHMInstance extends InstanceBase {
 		]
 		for (let i = 0; i < cmd.buffers.length; i++) {
 			if (this.midiSocket !== undefined) {
-				this.midiSocket.write(cmd.buffers[i])
+				this.midiSocket.send(cmd.buffers[i])
 			}
 		}
 	}
@@ -139,7 +141,7 @@ class AHMInstance extends InstanceBase {
 			for (let i = 0; i < buffers.length; i++) {
 				if (this.midiSocket !== undefined) {
 					this.log('debug', `sending ${buffers[i].toString('hex')} via MIDI TCP @${this.config.host}`)
-					this.midiSocket.write(buffers[i])
+					this.midiSocket.send(buffers[i])
 				}
 			}
 		}
@@ -152,7 +154,7 @@ class AHMInstance extends InstanceBase {
 		}
 
 		if (this.config.host) {
-			this.midiSocket = new tcp(this.config.host, MIDI_PORT)
+			this.midiSocket = new TCPHelper(this.config.host, this.MIDI_PORT)
 
 			this.midiSocket.on('status_change', (status, message) => {
 				this.updateStatus(status)

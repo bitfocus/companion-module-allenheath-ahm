@@ -53,7 +53,7 @@ export function getActions() {
 			let buffers = [Buffer.from([0x90, channel, action.options.mute ? 0x7f : 0x3f, 0x90, channel, 0])]
 
 			this.sendCommand(buffers)
-			this.inputsMute[channel] = opt.mute ? 1 : 0
+			this.inputsMute[channel] = action.options.mute ? 1 : 0
 		},
 	}
 
@@ -65,7 +65,7 @@ export function getActions() {
 
 			let buffers = [Buffer.from([0x91, channel, action.options.mute ? 0x7f : 0x3f, 0x91, channel, 0])]
 			this.sendCommand(buffers)
-			this.zonesMute[channel] = opt.mute ? 1 : 0
+			this.zonesMute[channel] = action.options.mute ? 1 : 0
 			this.checkFeedbacks('zoneMute')
 		},
 	}
@@ -115,7 +115,7 @@ export function getActions() {
 				]),
 			])
 			this.sendCommand(buffers)
-			this.inputsToZonesMute[channel][zoneNumber] = opt.mute ? 1 : 0
+			this.inputsToZonesMute[channel][zoneNumber] = action.options.mute ? 1 : 0
 			this.checkFeedbacks('inputToZoneMute')
 		},
 	}
