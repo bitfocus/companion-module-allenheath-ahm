@@ -3,6 +3,10 @@ import { combineRgb } from '@companion-module/base'
 export function getPresets() {
 	let presets = []
 
+	const ColorWhite = combineRgb(255, 255, 255)
+	const ColorBlack = combineRgb(0, 0, 0)
+	const ColorRed = combineRgb(200, 0, 0)
+
 	// Mute Inputs
 	for (let index = 0; index < this.inputsMute.length; index++) {
 		presets.push({
@@ -13,8 +17,8 @@ export function getPresets() {
 			style: {
 				text: `Mute Input ${parseInt(index) + 1}`,
 				size: '14',
-				color: combineRgb(255, 255, 255),
-				bgcolor: combineRgb(0, 0, 0),
+				color: ColorWhite,
+				bgcolor: ColorBlack,
 			},
 			steps: [
 				{
@@ -27,7 +31,10 @@ export function getPresets() {
 							},
 						},
 					],
-					up: [
+					up: [],
+				},
+				{
+					down: [
 						{
 							actionId: 'mute_input',
 							options: {
@@ -36,6 +43,7 @@ export function getPresets() {
 							},
 						},
 					],
+					up: [],
 				},
 			],
 			feedbacks: [
@@ -45,8 +53,8 @@ export function getPresets() {
 						input: index + 1,
 					},
 					style: {
-						color: combineRgb(255, 255, 255),
-						bgcolor: combineRgb(0, 0, 0),
+						color: ColorWhite,
+						bgcolor: ColorRed,
 					},
 				},
 			],
@@ -63,8 +71,8 @@ export function getPresets() {
 			style: {
 				text: `Mute zone ${parseInt(index) + 1}`,
 				size: '14',
-				color: combineRgb(255, 255, 255),
-				bgcolor: combineRgb(0, 0, 0),
+				color: ColorWhite,
+				bgcolor: ColorBlack,
 			},
 			steps: [
 				{
@@ -77,7 +85,10 @@ export function getPresets() {
 							},
 						},
 					],
-					up: [
+					up: [],
+				},
+				{
+					down: [
 						{
 							actionId: 'mute_zone',
 							options: {
@@ -86,6 +97,7 @@ export function getPresets() {
 							},
 						},
 					],
+					up: [],
 				},
 			],
 			feedbacks: [
@@ -95,8 +107,8 @@ export function getPresets() {
 						zone: parseInt(index) + 1,
 					},
 					style: {
-						color: combineRgb(255, 255, 255),
-						bgcolor: combineRgb(0, 0, 0),
+						color: ColorWhite,
+						bgcolor: ColorRed,
 					},
 				},
 			],
@@ -114,8 +126,8 @@ export function getPresets() {
 				style: {
 					text: `Mute input ${parseInt(input) + 1} to zone ${parseInt(zone) + 1}`,
 					size: '14',
-					color: combineRgb(255, 255, 255),
-					bgcolor: combineRgb(0, 0, 0),
+					color: ColorWhite,
+					bgcolor: ColorBlack,
 				},
 				steps: [
 					{
@@ -129,7 +141,10 @@ export function getPresets() {
 								},
 							},
 						],
-						up: [
+						up: [],
+					},
+					{
+						down: [
 							{
 								actionId: 'input_to_zone',
 								options: {
@@ -139,6 +154,7 @@ export function getPresets() {
 								},
 							},
 						],
+						up: [],
 					},
 				],
 				feedbacks: [
@@ -149,8 +165,8 @@ export function getPresets() {
 							zone: zone + 1,
 						},
 						style: {
-							color: combineRgb(255, 255, 255),
-							bgcolor: combineRgb(0, 0, 0),
+							color: ColorWhite,
+							bgcolor: ColorRed,
 						},
 					},
 				],
