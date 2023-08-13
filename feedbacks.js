@@ -1,116 +1,79 @@
-module.exports = {
+import { combineRgb } from '@companion-module/base'
 
-	getFeedbacks(inputsMute, zonesMute, inputsToZonesMute) {
-		var feedbacks = {};
+export function getFeedbacks() {
+	const feedbacks = {}
 
-		feedbacks['inputMute'] = {
-			label: 'Change background when input on mute',
-			description: 'When you mute the input change color',
-			options: [
-				{
-					type: 'colorpicker',
-					label: 'Foreground color',
-					id: 'fg',
-					default: this.rgb(255, 255, 255)
+	const ColorWhite = combineRgb(255, 255, 255)
+	const ColorRed = combineRgb(200, 0, 0)
 
-				},
-				{
-					type: 'colorpicker',
-					label: 'Background color',
-					id: 'bg',
-					default: this.rgb(255, 0, 0)
-				},
-				{
-					type: 'textinput',
-					label: 'Select input',
-					id: 'input',
-					default: 1
-				}
-			],
-			callback: (feedback, bank) => {
-				if (inputsMute[parseInt(feedback.options.input)-1] == 1) {
-					return {
-						color: feedback.options.fg,
-						bgcolor: feedback.options.bg
-					};
-				}
-			}
-		};
-
-		feedbacks['zoneMute'] = {
-			label: 'Change background when zone on mute',
-			description: 'When you mute the zone change color',
-			options: [
-				{
-					type: 'colorpicker',
-					label: 'Foreground color',
-					id: 'fg',
-					default: this.rgb(255, 255, 255)
-
-				},
-				{
-					type: 'colorpicker',
-					label: 'Background color',
-					id: 'bg',
-					default: this.rgb(255, 0, 0)
-				},
-				{
-					type: 'textinput',
-					label: 'Select zone',
-					id: 'zone',
-					default: 1
-				}
-			],
-			callback: (feedback, bank) => {
-				if (zonesMute[parseInt(feedback.options.zone)-1] == 1) {
-					return {
-						color: feedback.options.fg,
-						bgcolor: feedback.options.bg
-					};
-				}
-			}
-		};
-
-		feedbacks['inputToZoneMute'] = {
-			label: 'Change background when input to zone on mute',
-			description: 'When you mute the input on a zone change color',
-			options: [
-				{
-					type: 'colorpicker',
-					label: 'Foreground color',
-					id: 'fg',
-					default: this.rgb(255, 255, 255)
-
-				},
-				{
-					type: 'colorpicker',
-					label: 'Background color',
-					id: 'bg',
-					default: this.rgb(255, 0, 0)
-				},
-				{
-					type: 'textinput',
-					label: 'Select input',
-					id: 'input',
-					default: 1
-				},
-				{
-					type: 'textinput',
-					label: 'Select zone',
-					id: 'zone',
-					default: 1
-				}
-			],
-			callback: (feedback, bank) => {
-				if (inputsToZonesMute[parseInt(feedback.options.input)-1][parseInt(feedback.options.zone)-1] == 1) {
-					return {
-						color: feedback.options.fg,
-						bgcolor: feedback.options.bg
-					};
-				}
-			}
-		};
-
-		return feedbacks;
+	feedbacks['inputMute'] = {
+		type: 'boolean',
+		name: 'Change background when input on mute',
+		description: 'When you mute the input change color',
+		defaultStyle: {
+			color: ColorWhite,
+			bgcolor: ColorRed,
+		},
+		options: [
+			{
+				type: 'textinput',
+				label: 'Select input',
+				id: 'input',
+				default: 1,
+			},
+		],
+		callback: (feedback, bank) => {
+			return this.inputsMute[parseInt(feedback.options.input) - 1] == 1
+		},
 	}
+
+	feedbacks['zoneMute'] = {
+		type: 'boolean',
+		name: 'Change background when zone on mute',
+		description: 'When you mute the zone change color',
+		defaultStyle: {
+			color: ColorWhite,
+			bgcolor: ColorRed,
+		},
+		options: [
+			{
+				type: 'textinput',
+				label: 'Select zone',
+				id: 'zone',
+				default: 1,
+			},
+		],
+		callback: (feedback, bank) => {
+			return this.zonesMute[parseInt(feedback.options.zone) - 1] == 1
+		},
+	}
+
+	feedbacks['inputToZoneMute'] = {
+		type: 'boolean',
+		name: 'Change background when input to zone on mute',
+		description: 'When you mute the input on a zone change color',
+		defaultStyle: {
+			color: ColorWhite,
+			bgcolor: ColorRed,
+		},
+		options: [
+			{
+				type: 'textinput',
+				label: 'Select input',
+				id: 'input',
+				default: 1,
+			},
+			{
+				type: 'textinput',
+				label: 'Select zone',
+				id: 'zone',
+				default: 1,
+			},
+		],
+		callback: (feedback, bank) => {
+			return this.inputsToZonesMute[parseInt(feedback.options.input) - 1][parseInt(feedback.options.zone) - 1] == 1
+		},
+	}
+
+	return feedbacks
 }
