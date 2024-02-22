@@ -71,8 +71,8 @@ export function getActions() {
 	}
 
 	actions['scene_recall'] = {
-		name: 'Recall a scene',
-		options: this.listOptions('Recall scene', 500, -1),
+		name: 'Recall Preset',
+		options: this.listOptions('Recall Preset', 500, -1),
 		callback: (action) => {
 			let presetNumber = parseInt(action.options.number)
 			let buffers = [
