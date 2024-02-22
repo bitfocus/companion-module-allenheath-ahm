@@ -95,7 +95,7 @@ export function getActions() {
 			let channel = parseInt(action.options.inputChannel)
 			let zoneNumber = parseInt(action.options.number)
 
-			let buffers = (buffers = [
+			let buffers = [
 				Buffer.from([
 					0xf0,
 					0x00,
@@ -113,7 +113,7 @@ export function getActions() {
 					action.options.mute ? 0x7f : 0x3f,
 					0xf7,
 				]),
-			])
+			]
 			this.sendCommand(buffers)
 			this.inputsToZonesMute[channel][zoneNumber] = action.options.mute ? 1 : 0
 			this.checkFeedbacks('inputToZoneMute')
@@ -123,7 +123,7 @@ export function getActions() {
 	// actions['get_phantom'] = {
 	// 	name: 'Get phantom info',
 	// 	options: this.listOptions('Input', 64, -1),
-	callback: (action) => {}
+	//callback: (action) => {}
 	// }
 
 	return actions
