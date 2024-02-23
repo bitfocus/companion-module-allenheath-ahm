@@ -18,9 +18,9 @@ class AHMInstance extends InstanceBase {
 		this.MIDI_PORT = 51325
 		this.numberOfInputs = 64
 		let numberOfZones = 64
-		this.counter = 0
+
 		this.inputsMute = this.createArray(this.numberOfInputs)
-		this.inputsToZonesMute = this.createArray(this.numberOfInputs, numberOfZones)
+		this.inputsToZonesMute = {}
 		this.zonesMute = this.createArray(numberOfZones)
 		this.initTCP()
 		this.initActions()
@@ -181,27 +181,27 @@ class AHMInstance extends InstanceBase {
 	}
 
 	processIncomingData(data) {
-		console.log(data)
+		//console.log(data)
 
 		switch (data[0]) {
 			case 144:
 				// input mute
 				// data[2] 63 == unmute, 127 == mute
-				console.log(`Channel ${data[2] == 63 ? 'unmute' : 'mute'}: ${this.hexToDec(data[1]) + 1}`)
+				//console.log(`Channel ${data[2] == 63 ? 'unmute' : 'mute'}: ${this.hexToDec(data[1]) + 1}`)
 				// this.log('debug', `Channel ${parseInt(data[1], 16) + 1} ${data[2] == 63 ? 'unmute' : 'mute'}`)
 				this.inputsMute[this.hexToDec(data[1])] = data[2] == 63 ? 0 : 1
 				this.checkFeedbacks('inputMute')
 				break
 			case 145:
 				// zone mute
-				console.log(`Zone ${data[2] == 63 ? 'unmute' : 'mute'}: ${this.hexToDec(data[1]) + 1}`)
-				this.log('debug', `Zone ${this.hexToDec(data[1]) + 1} ${data[2] == 63 ? 'unmute' : 'mute'}`)
+				//console.log(`Zone ${data[2] == 63 ? 'unmute' : 'mute'}: ${this.hexToDec(data[1]) + 1}`)
+				//this.log('debug', `Zone ${this.hexToDec(data[1]) + 1} ${data[2] == 63 ? 'unmute' : 'mute'}`)
 				this.zonesMute[this.hexToDec(data[1])] = data[2] == 63 ? 0 : 1
 				this.checkFeedbacks('zoneMute')
 				break
 			case 240:
 				// input to zone mute
-				console.log(
+				/* console.log(
 					`Input ${this.hexToDec(data[10]) + 1} to zone Zone ${this.hexToDec(data[12]) + 1} ${
 						data[13] == 63 ? 'unmute' : 'mute'
 					}`
@@ -211,12 +211,20 @@ class AHMInstance extends InstanceBase {
 					`Input ${this.hexToDec(data[10]) + 1} to zone Zone ${this.hexToDec(data[12]) + 1} ${
 						data[13] == 63 ? 'unmute' : 'mute'
 					}`
-				)
-				this.inputsToZonesMute[this.hexToDec(data[10])][this.hexToDec(data[12]) + 1] = data[2] == 63 ? 0 : 1
+				)*/
+				let channel = this.hexToDec(data[10]) + 1
+				let zoneNumber = this.hexToDec(data[12]) + 1
+
+				if (this.inputsToZonesMute[channel]?.[zoneNumber]) {
+					this.inputsToZonesMute[channel][zoneNumber] = data[13] == 63 ? 0 : 1
+				} else {
+					this.inputsToZonesMute[channel] = {}
+					this.inputsToZonesMute[channel][zoneNumber] = data[13] == 63 ? 0 : 1
+				}
 				this.checkFeedbacks('inputToZoneMute')
 				break
 			default:
-				console.log('Extra data coming in')
+				//console.log('Extra data coming in')
 				break
 		}
 	}
