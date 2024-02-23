@@ -3,7 +3,7 @@
 	"name": "allenheath-ahm",
 	"shortname": "AHM",
 	"description": "Allen & Heath AHM module for Companion",
-	"version": "2.0.0",
+	"version": "2.0.1",
 	"license": "MIT",
 	"repository": "git+https://github.com/bitfocus/companion-module-allenheath-ahm.git",
 	"bugs": "https://github.com/bitfocus/companion-module-allenheath-ahm/issues",
