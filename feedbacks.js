@@ -71,7 +71,7 @@ export function getFeedbacks() {
 			},
 		],
 		callback: (feedback, bank) => {
-			return this.inputsToZonesMute[parseInt(feedback.options.input) - 1][parseInt(feedback.options.zone) - 1] == 1
+			return this.inputsToZonesMute[parseInt(feedback.options.input)]?.[parseInt(feedback.options.zone)] == 1
 		},
 	}
 

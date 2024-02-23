@@ -115,7 +115,13 @@ export function getActions() {
 				]),
 			]
 			this.sendCommand(buffers)
-			this.inputsToZonesMute[channel][zoneNumber] = action.options.mute ? 1 : 0
+			if (this.inputsToZonesMute[channel + 1]?.[zoneNumber + 1]) {
+				this.inputsToZonesMute[channel + 1][zoneNumber + 1] = action.options.mute ? 1 : 0
+			} else {
+				this.inputsToZonesMute[channel + 1] = {}
+				this.inputsToZonesMute[channel + 1][zoneNumber + 1] = action.options.mute ? 1 : 0
+			}
+
 			this.checkFeedbacks('inputToZoneMute')
 		},
 	}
