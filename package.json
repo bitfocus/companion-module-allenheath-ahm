@@ -1,6 +1,6 @@
 {
 	"name": "allenheath-ahm",
-	"version": "2.0.1",
+	"version": "2.0.2",
 	"description": "Allen & Heath AHM module for Companion",
 	"main": "index.js",
 	"type": "module",
@@ -13,10 +13,11 @@
 		"url": "git+https://github.com/bitfocus/companion-module-allenheath-ahm.git"
 	},
 	"dependencies": {
-		"@companion-module/base": "~1.7.0"
+		"@companion-module/base": "~1.10.0"
 	},
 	"devDependencies": {
-		"@companion-module/tools": "^1.5.0"
+		"@companion-module/tools": "^2.0.0",
+		"prettier": "^3.3.3"
 	},
 	"prettier": "@companion-module/tools/.prettierrc.json"
 }
