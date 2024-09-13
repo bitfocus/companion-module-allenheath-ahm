@@ -8,10 +8,10 @@ export function getPresets() {
 	const ColorRed = combineRgb(200, 0, 0)
 
 	// Mute Inputs
-	for (let index = 0; index < this.inputsMute.length; index++) {
+	for (let index = 0; index < this.numberOfInputs; index++) {
 		presets.push({
 			type: 'button',
-			category: 'Mute input',
+			category: 'Mute Input',
 			name: `Mute Input ${parseInt(index) + 1}`,
 			options: {},
 			style: {
@@ -26,7 +26,7 @@ export function getPresets() {
 						{
 							actionId: 'mute_input',
 							options: {
-								inputChannel: index,
+								inputNum: index,
 								mute: true,
 							},
 						},
@@ -38,7 +38,7 @@ export function getPresets() {
 						{
 							actionId: 'mute_input',
 							options: {
-								inputChannel: index,
+								inputNum: index,
 								mute: false,
 							},
 						},
@@ -62,14 +62,14 @@ export function getPresets() {
 	}
 
 	// Mute Zones
-	for (let index = 0; index < this.zonesMute.length; index++) {
+	for (let index = 0; index < this.numberOfZones; index++) {
 		presets.push({
 			type: 'button',
-			category: 'Mute zones',
-			name: `Mute zone ${parseInt(index) + 1}`,
+			category: 'Mute Zones',
+			name: `Mute Zone ${parseInt(index) + 1}`,
 			options: {},
 			style: {
-				text: `Mute zone ${parseInt(index) + 1}`,
+				text: `Mute Zone ${parseInt(index) + 1}`,
 				size: '14',
 				color: ColorWhite,
 				bgcolor: ColorBlack,
@@ -80,7 +80,7 @@ export function getPresets() {
 						{
 							actionId: 'mute_zone',
 							options: {
-								inputChannel: index,
+								inputNum: index,
 								mute: true,
 							},
 						},
@@ -92,7 +92,7 @@ export function getPresets() {
 						{
 							actionId: 'mute_zone',
 							options: {
-								inputChannel: index,
+								inputNum: index,
 								mute: false,
 							},
 						},
@@ -116,15 +116,15 @@ export function getPresets() {
 	}
 
 	// Mute input to Zone
-	for (let input = 0; input < this.inputsMute.length; input++) {
-		for (let zone = 0; zone < this.zonesMute.length; zone++) {
+	for (let input = 0; input < this.numberOfInputs; input++) {
+		for (let zone = 0; zone < this.numberOfZones; zone++) {
 			presets.push({
 				type: 'button',
-				category: `Mute input ${parseInt(input) + 1} to Zone`,
-				name: `Mute input ${parseInt(input) + 1} to zone ${parseInt(zone) + 1}`,
+				category: `Mute Input ${parseInt(input) + 1} to Zone`,
+				name: `Mute Input ${parseInt(input) + 1} to Zone ${parseInt(zone) + 1}`,
 				options: {},
 				style: {
-					text: `Mute input ${parseInt(input) + 1} to zone ${parseInt(zone) + 1}`,
+					text: `Mute Input ${parseInt(input) + 1} to Zone ${parseInt(zone) + 1}`,
 					size: '14',
 					color: ColorWhite,
 					bgcolor: ColorBlack,
@@ -135,7 +135,7 @@ export function getPresets() {
 							{
 								actionId: 'input_to_zone',
 								options: {
-									inputChannel: parseInt(input),
+									inputNum: parseInt(input),
 									number: zone,
 									mute: true,
 								},
@@ -148,7 +148,7 @@ export function getPresets() {
 							{
 								actionId: 'input_to_zone',
 								options: {
-									inputChannel: parseInt(input),
+									inputNum: parseInt(input),
 									number: zone,
 									mute: false,
 								},

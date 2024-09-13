@@ -1,38 +1,32 @@
-export function getActions() {
-	this.chCount = 64
-	this.sceneCount = 500
+import * as Helpers from './helpers.js'
+import * as Constants from './constants.js'
 
+const PRESET_COUNT = 500;
+
+export function getActions() {
 	let actions = {}
 
 	this.listOptions = (name, qty, offset) => {
-		this.CHOICES = []
-		for (let i = 1; i <= qty; i++) {
-			this.CHOICES.push({ label: `${name} ${i}`, id: i + offset })
-		}
 		return [
 			{
 				type: 'dropdown',
 				label: name,
 				id: 'number',
 				default: 0,
-				choices: this.CHOICES,
+				choices: Helpers.getChoicesArrayWithIncrementingNumbers(name, qty, offset),
 				minChoicesForSearch: 0,
 			},
 		]
 	}
 
 	this.muteOptions = (name, qty, offset) => {
-		this.CHOICES = []
-		for (let i = 1; i <= qty; i++) {
-			this.CHOICES.push({ label: `${name} ${i}`, id: i + offset })
-		}
 		return [
 			{
 				type: 'dropdown',
 				label: name,
-				id: 'inputChannel',
+				id: 'inputNum',
 				default: 0,
-				choices: this.CHOICES,
+				choices: Helpers.getChoicesArrayWithIncrementingNumbers(name, qty, offset),
 				minChoicesForSearch: 0,
 			},
 			{
@@ -44,9 +38,52 @@ export function getActions() {
 		]
 	}
 
+	this.setLevelOptions = (name, qty, offset) => {
+		return [
+			{
+				type: 'dropdown',
+				label: name,
+				id: 'inputNum',
+				default: 0,
+				choices: Helpers.getChoicesArrayWithIncrementingNumbers(name, qty, offset),
+				minChoicesForSearch: 0,
+			},
+			{
+				type: 'dropdown',
+				label: 'Set Level (dBu)',
+				id: 'level',
+				default: '0',
+				choices: Helpers.getChoicesArrayOf1DArray(Constants.dbu_Values)
+			}
+		]
+	}
+
+	this.incDecOptions = (name, qty, offset) => {
+		return [
+			{
+				type: 'dropdown',
+				label: name,
+				id: 'inputNum',
+				default: 0,
+				choices: Helpers.getChoicesArrayWithIncrementingNumbers(name, qty, offset),
+				minChoicesForSearch: 0,
+			},
+			{
+				type: 'dropdown',
+				label: 'Increment/Decrement',
+				id: 'incdec',
+				default: 'inc',
+				choices: [
+					{ id: 'inc', label: 'Increment' },
+					{ id: 'dec', label: 'Decrement' },
+				],
+			}
+		]
+	}
+
 	actions['mute_input'] = {
 		name: 'Mute Input',
-		options: this.muteOptions('Mute input', 64, -1),
+		options: this.muteOptions('Input', this.numberOfInputs, -1),
 		callback: (action) => {
 			let channel = parseInt(action.options.inputChannel)
 
@@ -59,7 +96,7 @@ export function getActions() {
 
 	actions['mute_zone'] = {
 		name: 'Mute Zone',
-		options: this.muteOptions('Mute zone', 64, -1),
+		options: this.muteOptions('Zone', this.numberOfInputs, -1),
 		callback: (action) => {
 			let channel = parseInt(action.options.inputChannel)
 
@@ -70,9 +107,9 @@ export function getActions() {
 		},
 	}
 
-	actions['scene_recall'] = {
+	actions['preset_recall'] = {
 		name: 'Recall Preset',
-		options: this.listOptions('Recall Preset', 500, -1),
+		options: this.listOptions('Preset', PRESET_COUNT, -1),
 		callback: (action) => {
 			let presetNumber = parseInt(action.options.number)
 			let buffers = [
@@ -89,8 +126,8 @@ export function getActions() {
 	}
 
 	actions['input_to_zone'] = {
-		name: 'Mute input to zone',
-		options: this.muteOptions('Mute Channel', 64, -1).concat(this.listOptions('zone', 64, -1)),
+		name: 'Mute Input to Zone',
+		options: this.muteOptions('Input', this.numberOfInputs, -1).concat(this.listOptions('Zone', this.numberOfZones, -1)),
 		callback: (action) => {
 			let channel = parseInt(action.options.inputChannel)
 			let zoneNumber = parseInt(action.options.number)
@@ -123,6 +160,38 @@ export function getActions() {
 			}
 
 			this.checkFeedbacks('inputToZoneMute')
+		},
+	}
+
+	actions['set_level_input'] = {
+		name: 'Set Level of Input',
+		options: this.setLevelOptions('Input', this.numberOfInputs, -1),
+		callback: (action) => {
+			let inputNum = parseInt(action.options.inputNum)
+			let levelDec = parseInt(action.options.level)
+
+			let buffers = [Buffer.from([0xB0, 0x63, inputNum, 0xB0, 0x62, 0x17, 0xB0, 0x06, levelDec])]
+			this.sendCommand(buffers)
+
+			// send "Get Channel Level" command so the response triggers the variable to be updated
+			//buffers = [Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12,	0x01, 0x00, 0x00, 0x01, 0x0b, 0x17, inputNum, 0xf7])]
+			//this.sendCommand(buffers)
+			// does not work, since the device can somehow not handle two commands quickly after another
+
+			// manually set variable value, increment Num because it starts at 0 instead of 1
+			this.setVariableValues({ [Helpers.getVarNameInputLevel(inputNum+1)]: this.getDbuValue(levelDec) })
+		},
+	}
+
+	actions['inc_dec_level_input'] = {
+		name: 'Increment/Decrement Level of Input',
+		options: this.incDecOptions('Input', this.numberOfInputs, -1),
+		callback: (action) => {
+			let inputNum = parseInt(action.options.inputNum)
+			let incdecSelector = action.options.incdec == 'inc' ? 0x7F : 0x3F;
+
+			let buffers = [Buffer.from([0xB0, 0x63, inputNum, 0xB0, 0x62, 0x20, 0xB0, 0x06, incdecSelector])]
+			this.sendCommand(buffers)
 		},
 	}
 

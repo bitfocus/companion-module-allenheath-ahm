@@ -4,8 +4,13 @@ import { getPresets } from './presets.js'
 import { getVariables } from './variables.js'
 import { getFeedbacks } from './feedbacks.js'
 import UpgradeScripts from './upgrades.js'
+import * as Constants from './constants.js'
+import * as Helpers from './helpers.js'
+
+const MIDI_PORT = 51325;
 
 class AHMInstance extends InstanceBase {
+
 	constructor(internal) {
 		super(internal)
 	}
@@ -15,13 +20,16 @@ class AHMInstance extends InstanceBase {
 
 		this.updateStatus(InstanceStatus.Connecting)
 
-		this.MIDI_PORT = 51325
+		// default to 64 in/outs (AHM-64), create all arrays with maximum 64 channels
 		this.numberOfInputs = 64
-		let numberOfZones = 64
-
+		this.numberOfZones = 64
 		this.inputsMute = this.createArray(this.numberOfInputs)
 		this.inputsToZonesMute = {}
-		this.zonesMute = this.createArray(numberOfZones)
+		this.zonesMute = this.createArray(this.numberOfZones)
+
+
+		// then set unit type according to config; reduces traffic if smaller AHM is used
+		this.initUnitType();
 		this.initTCP()
 		this.initActions()
 		this.initFeedbacks()
@@ -36,9 +44,30 @@ class AHMInstance extends InstanceBase {
 		this.log('debug', 'destroy')
 	}
 
+	initUnitType(){
+		switch(this.config.ahm_type){
+			case 'ahm16':
+				this.log('info', 'Set Unit Type to AHM-16.');
+				this.numberOfInputs = 16
+				this.numberOfZones = 16
+				break;
+			case 'ahm32':
+				this.log('info', 'Set Unit Type to AHM-32.');
+				this.numberOfInputs = 32
+				this.numberOfZones = 32
+				break;
+			case 'ahm64':
+			default:
+				this.log('info', 'Set Unit Type to AHM-64.');
+				break;
+		}
+	}
+
 	async configUpdated(config) {
 		this.config = config
+		this.initUnitChannelSize();
 		this.initActions()
+		this.initVariables()
 		this.initTCP()
 	}
 
@@ -51,6 +80,18 @@ class AHMInstance extends InstanceBase {
 				width: 6,
 				default: '',
 				regex: Regex.IP,
+			},
+			{
+				type: 'dropdown',
+				id: 'ahm_type',
+				label: 'Type of Device',
+				width: 6,
+				choices:[
+					{ id: 'ahm64', label: 'AHM-64' },
+					{ id: 'ahm32', label: 'AHM-32' },
+					{ id: 'ahm16', label: 'AHM-16' },
+				],
+				default: 'ahm64'
 			},
 		]
 	}
@@ -79,40 +120,28 @@ class AHMInstance extends InstanceBase {
 		return new Promise((resolve) => setTimeout(resolve, ms))
 	}
 
-	async getMuteInfoFromDevice(length) {
-		for (let index = 0; index < length; index++) {
-			this.getMuteInfo(0, index) // inputs
-			await this.sleep(150)
-			this.getMuteInfo(1, index) // zones
+	async getMuteInfoFromDevice() {
+		// get inputs
+		let unitInAmount = this.numberOfInputs;
+		for (let index = 0; index < unitInAmount; index++) {
+			this.getMuteInfo(0, index) // inputs = 0
 			await this.sleep(150)
 		}
-		// this.getMuteInfo(channel, 11)
+		// get zones
+		let unitZonesAmount = this.numberOfZones;
+		for (let index = 0; index < unitZonesAmount; index++) {
+			this.getMuteInfo(1, index) // zones = 1
+			await this.sleep(150)
+		}
 	}
 
 	getMuteInfo(channel, number) {
-		let cmd = { buffers: [] }
-		cmd.buffers = [
-			Buffer.from([
-				0xf0,
-				0x00,
-				0x00,
-				0x1a,
-				0x50,
-				0x12,
-				0x01,
-				0x00,
-				parseInt(channel),
-				0x01,
-				0x09,
-				parseInt(number),
-				0xf7,
-			]),
-		]
-		for (let i = 0; i < cmd.buffers.length; i++) {
-			if (this.midiSocket !== undefined) {
-				this.midiSocket.send(cmd.buffers[i])
-			}
-		}
+		let buffer = [Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12, 0x01, 0x00,
+			parseInt(channel), 0x01, 0x09,
+			parseInt(number), 0xf7
+		])]
+
+		this.sendCommand(buffer)
 	}
 
 	createArray(size, extraArrayLength) {
@@ -125,6 +154,22 @@ class AHMInstance extends InstanceBase {
 			}
 		}
 		return array
+	}
+
+	/* Make method accessible to functions of other files and log variable changes */
+    setVariableValues(values) {
+		this.log('debug', `Updating variables: ${JSON.stringify(values)} `)
+		super.setVariableValues(values);
+	}
+	
+	/* Return corresponding dBu Value to decimal number */
+	getDbuValue(dezValue) {
+		if(Number.isInteger(dezValue) == false || dezValue > 127 || dezValue < 0)
+		{
+			return NaN
+		}
+
+		return Constants.dbu_Values[dezValue]
 	}
 
 	/* case 'get_phantom':
@@ -154,7 +199,7 @@ class AHMInstance extends InstanceBase {
 		}
 
 		if (this.config.host) {
-			this.midiSocket = new TCPHelper(this.config.host, this.MIDI_PORT)
+			this.midiSocket = new TCPHelper(this.config.host, MIDI_PORT)
 
 			this.midiSocket.on('status_change', (status, message) => {
 				this.updateStatus(status)
@@ -171,7 +216,7 @@ class AHMInstance extends InstanceBase {
 			this.midiSocket.on('connect', () => {
 				this.log('debug', `MIDI Connected to ${this.config.host}`)
 				this.updateStatus(InstanceStatus.Ok)
-				this.getMuteInfoFromDevice(64)
+				this.getMuteInfoFromDevice()
 			})
 		}
 	}
@@ -181,7 +226,7 @@ class AHMInstance extends InstanceBase {
 	}
 
 	processIncomingData(data) {
-		//console.log(data)
+		console.log(data)
 
 		switch (data[0]) {
 			case 144:
@@ -222,6 +267,17 @@ class AHMInstance extends InstanceBase {
 					this.inputsToZonesMute[channel][zoneNumber] = data[13] == 63 ? 0 : 1
 				}
 				this.checkFeedbacks('inputToZoneMute')
+				break
+			case 176:
+				// level change on input
+				let inputNum = this.hexToDec(data[2]) + 1
+				let level = this.hexToDec(data[6])
+				let variableName = Helpers.getVarNameInputLevel(inputNum)
+
+				this.log('debug', `Input ${inputNum} has new level: ${level} (dec) = ${this.getDbuValue(level)} (dBu), changing variable ${variableName}`)
+
+				this.setVariableValues({ [variableName]: this.getDbuValue(level) })
+				
 				break
 			default:
 				//console.log('Extra data coming in')
