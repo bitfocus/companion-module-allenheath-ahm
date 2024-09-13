@@ -10,8 +10,8 @@ export function getActions() {
 		return [
 			{
 				type: 'dropdown',
-				label: name,
 				id: 'number',
+				label: name,
 				default: 0,
 				choices: Helpers.getChoicesArrayWithIncrementingNumbers(name, qty, offset),
 				minChoicesForSearch: 0,
@@ -23,16 +23,16 @@ export function getActions() {
 		return [
 			{
 				type: 'dropdown',
+				id: 'mute_number',
 				label: name,
-				id: 'inputNum',
 				default: 0,
 				choices: Helpers.getChoicesArrayWithIncrementingNumbers(name, qty, offset),
 				minChoicesForSearch: 0,
 			},
 			{
 				type: 'checkbox',
-				label: 'Mute',
 				id: 'mute',
+				label: 'Mute',
 				default: true,
 			},
 		]
@@ -42,16 +42,16 @@ export function getActions() {
 		return [
 			{
 				type: 'dropdown',
-				label: name,
 				id: 'inputNum',
+				label: name,
 				default: 0,
 				choices: Helpers.getChoicesArrayWithIncrementingNumbers(name, qty, offset),
 				minChoicesForSearch: 0,
 			},
 			{
 				type: 'dropdown',
-				label: 'Set Level (dBu)',
 				id: 'level',
+				label: 'Set Level (dBu)',
 				default: '0',
 				choices: Helpers.getChoicesArrayOf1DArray(Constants.dbu_Values)
 			}
@@ -62,16 +62,16 @@ export function getActions() {
 		return [
 			{
 				type: 'dropdown',
-				label: name,
 				id: 'inputNum',
+				label: name,
 				default: 0,
 				choices: Helpers.getChoicesArrayWithIncrementingNumbers(name, qty, offset),
 				minChoicesForSearch: 0,
 			},
 			{
 				type: 'dropdown',
-				label: 'Increment/Decrement',
 				id: 'incdec',
+				label: 'Increment/Decrement',
 				default: 'inc',
 				choices: [
 					{ id: 'inc', label: 'Increment' },
@@ -85,12 +85,13 @@ export function getActions() {
 		name: 'Mute Input',
 		options: this.muteOptions('Input', this.numberOfInputs, -1),
 		callback: (action) => {
-			let channel = parseInt(action.options.inputChannel)
+			let inputNumber = parseInt(action.options.mute_number)
 
-			let buffers = [Buffer.from([0x90, channel, action.options.mute ? 0x7f : 0x3f, 0x90, channel, 0])]
+			let buffers = [Buffer.from([0x90, inputNumber, action.options.mute ? 0x7f : 0x3f, 0x90, inputNumber, 0])]
 
 			this.sendCommand(buffers)
-			this.inputsMute[channel] = action.options.mute ? 1 : 0
+			this.inputsMute[inputNumber] = action.options.mute ? 1 : 0
+			this.checkFeedbacks('inputMute')
 		},
 	}
 
@@ -98,11 +99,12 @@ export function getActions() {
 		name: 'Mute Zone',
 		options: this.muteOptions('Zone', this.numberOfInputs, -1),
 		callback: (action) => {
-			let channel = parseInt(action.options.inputChannel)
+			let zoneNumber = parseInt(action.options.mute_number)
 
-			let buffers = [Buffer.from([0x91, channel, action.options.mute ? 0x7f : 0x3f, 0x91, channel, 0])]
+			let buffers = [Buffer.from([0x91, zoneNumber, action.options.mute ? 0x7f : 0x3f, 0x91, zoneNumber, 0])]
+
 			this.sendCommand(buffers)
-			this.zonesMute[channel] = action.options.mute ? 1 : 0
+			this.zonesMute[zoneNumber] = action.options.mute ? 1 : 0
 			this.checkFeedbacks('zoneMute')
 		},
 	}
@@ -129,7 +131,7 @@ export function getActions() {
 		name: 'Mute Input to Zone',
 		options: this.muteOptions('Input', this.numberOfInputs, -1).concat(this.listOptions('Zone', this.numberOfZones, -1)),
 		callback: (action) => {
-			let channel = parseInt(action.options.inputChannel)
+			let inputNumber = parseInt(action.options.mute_number)
 			let zoneNumber = parseInt(action.options.number)
 
 			let buffers = [
@@ -144,7 +146,7 @@ export function getActions() {
 					0x00,
 					0x00,
 					0x03,
-					channel,
+					inputNumber,
 					0x01,
 					zoneNumber,
 					action.options.mute ? 0x7f : 0x3f,
@@ -152,11 +154,11 @@ export function getActions() {
 				]),
 			]
 			this.sendCommand(buffers)
-			if (this.inputsToZonesMute[channel + 1]?.[zoneNumber + 1]) {
-				this.inputsToZonesMute[channel + 1][zoneNumber + 1] = action.options.mute ? 1 : 0
+			if (this.inputsToZonesMute[inputNumber + 1]?.[zoneNumber + 1]) {
+				this.inputsToZonesMute[inputNumber + 1][zoneNumber + 1] = action.options.mute ? 1 : 0
 			} else {
-				this.inputsToZonesMute[channel + 1] = {}
-				this.inputsToZonesMute[channel + 1][zoneNumber + 1] = action.options.mute ? 1 : 0
+				this.inputsToZonesMute[inputNumber + 1] = {}
+				this.inputsToZonesMute[inputNumber + 1][zoneNumber + 1] = action.options.mute ? 1 : 0
 			}
 
 			this.checkFeedbacks('inputToZoneMute')

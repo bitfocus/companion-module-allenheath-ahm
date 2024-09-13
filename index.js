@@ -84,7 +84,7 @@ class AHMInstance extends InstanceBase {
 			{
 				type: 'dropdown',
 				id: 'ahm_type',
-				label: 'Type of Device',
+				label: 'Type of Device (Re-enable required after change)',
 				width: 6,
 				choices:[
 					{ id: 'ahm64', label: 'AHM-64' },
@@ -97,8 +97,9 @@ class AHMInstance extends InstanceBase {
 	}
 
 	initVariables() {
-		const variables = getVariables.bind(this)()
-		this.setVariableDefinitions(variables)
+		const [definitions, initValues] = getVariables.bind(this)()
+		this.setVariableDefinitions(definitions)
+		this.setVariableValues(initValues)
 	}
 
 	initFeedbacks() {
@@ -160,7 +161,7 @@ class AHMInstance extends InstanceBase {
     setVariableValues(values) {
 		this.log('debug', `Updating variables: ${JSON.stringify(values)} `)
 		super.setVariableValues(values);
-	}
+	} 
 	
 	/* Return corresponding dBu Value to decimal number */
 	getDbuValue(dezValue) {
@@ -257,20 +258,20 @@ class AHMInstance extends InstanceBase {
 						data[13] == 63 ? 'unmute' : 'mute'
 					}`
 				)*/
-				let channel = this.hexToDec(data[10]) + 1
-				let zoneNumber = this.hexToDec(data[12]) + 1
+				let inputNum = this.hexToDec(data[10]) + 1
+				let zoneNum = this.hexToDec(data[12]) + 1
 
-				if (this.inputsToZonesMute[channel]?.[zoneNumber]) {
-					this.inputsToZonesMute[channel][zoneNumber] = data[13] == 63 ? 0 : 1
+				if (this.inputsToZonesMute[inputNum]?.[zoneNum]) {
+					this.inputsToZonesMute[inputNum][zoneNum] = data[13] == 63 ? 0 : 1
 				} else {
-					this.inputsToZonesMute[channel] = {}
-					this.inputsToZonesMute[channel][zoneNumber] = data[13] == 63 ? 0 : 1
+					this.inputsToZonesMute[inputNum] = {}
+					this.inputsToZonesMute[inputNum][zoneNum] = data[13] == 63 ? 0 : 1
 				}
 				this.checkFeedbacks('inputToZoneMute')
 				break
 			case 176:
 				// level change on input
-				let inputNum = this.hexToDec(data[2]) + 1
+				inputNum = this.hexToDec(data[2]) + 1
 				let level = this.hexToDec(data[6])
 				let variableName = Helpers.getVarNameInputLevel(inputNum)
 
