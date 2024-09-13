@@ -168,31 +168,33 @@ export function getActions() {
 	actions['set_level_input'] = {
 		name: 'Set Level of Input',
 		options: this.setLevelOptions('Input', this.numberOfInputs, -1),
-		callback: (action) => {
+		callback: async (action) => {
 			let inputNum = parseInt(action.options.inputNum)
 			let levelDec = parseInt(action.options.level)
 
 			let buffers = [Buffer.from([0xB0, 0x63, inputNum, 0xB0, 0x62, 0x17, 0xB0, 0x06, levelDec])]
 			this.sendCommand(buffers)
 
-			// send "Get Channel Level" command so the response triggers the variable to be updated
-			//buffers = [Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12,	0x01, 0x00, 0x00, 0x01, 0x0b, 0x17, inputNum, 0xf7])]
-			//this.sendCommand(buffers)
-			// does not work, since the device can somehow not handle two commands quickly after another
-
-			// manually set variable value, increment Num because it starts at 0 instead of 1
-			this.setVariableValues({ [Helpers.getVarNameInputLevel(inputNum+1)]: this.getDbuValue(levelDec) })
+			// wait until device has processed first command and then send "Get Channel Level" command so the response triggers the variable to be updated
+			await this.sleep(150)
+			buffers = [Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12,	0x01, 0x00, 0x00, 0x01, 0x0b, 0x17, inputNum, 0xf7])]
+			this.sendCommand(buffers)
 		},
 	}
 
 	actions['inc_dec_level_input'] = {
 		name: 'Increment/Decrement Level of Input',
 		options: this.incDecOptions('Input', this.numberOfInputs, -1),
-		callback: (action) => {
+		callback: async (action) => {
 			let inputNum = parseInt(action.options.inputNum)
 			let incdecSelector = action.options.incdec == 'inc' ? 0x7F : 0x3F;
 
 			let buffers = [Buffer.from([0xB0, 0x63, inputNum, 0xB0, 0x62, 0x20, 0xB0, 0x06, incdecSelector])]
+			this.sendCommand(buffers)
+
+			// wait until device has processed first command and then send "Get Channel Level" command so the response triggers the variable to be updated
+			await this.sleep(150)
+			buffers = [Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12,	0x01, 0x00, 0x00, 0x01, 0x0b, 0x17, inputNum, 0xf7])]
 			this.sendCommand(buffers)
 		},
 	}

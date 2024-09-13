@@ -121,29 +121,47 @@ class AHMInstance extends InstanceBase {
 		return new Promise((resolve) => setTimeout(resolve, ms))
 	}
 
-	async getMuteInfoFromDevice() {
+	async updateLevelVariables() {
 		// get inputs
 		let unitInAmount = this.numberOfInputs;
 		for (let index = 0; index < unitInAmount; index++) {
-			this.getMuteInfo(0, index) // inputs = 0
-			await this.sleep(150)
-		}
-		// get zones
-		let unitZonesAmount = this.numberOfZones;
-		for (let index = 0; index < unitZonesAmount; index++) {
-			this.getMuteInfo(1, index) // zones = 1
+			this.requestLevelInfo(index) // inputs = 0
 			await this.sleep(150)
 		}
 	}
 
-	getMuteInfo(channel, number) {
+	async performReadoutAfterConnected() {
+		// get input info
+		let unitInAmount = this.numberOfInputs;
+		for (let index = 0; index < unitInAmount; index++) {
+			this.requestMuteInfo(0, index) // inputs = 0
+			await this.sleep(150)
+			this.requestLevelInfo(index) // level info
+			await this.sleep(150)
+		}
+		// get zone info
+		let unitZonesAmount = this.numberOfZones;
+		for (let index = 0; index < unitZonesAmount; index++) {
+			this.requestMuteInfo(1, index) // zones = 1
+			await this.sleep(150)
+		}
+	}
+
+	requestMuteInfo(channel, number) {
 		let buffer = [Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12, 0x01, 0x00,
 			parseInt(channel), 0x01, 0x09,
 			parseInt(number), 0xf7
 		])]
-
 		this.sendCommand(buffer)
 	}
+
+	requestLevelInfo(inputNum) {
+		let buffer = [Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12, 0x01, 0x00, 
+			0x00, 0x01, 0x0b, 0x17, inputNum, 0xf7
+		])]
+		this.sendCommand(buffer)
+	}
+
 
 	createArray(size, extraArrayLength) {
 		let array = new Array(size)
@@ -217,7 +235,7 @@ class AHMInstance extends InstanceBase {
 			this.midiSocket.on('connect', () => {
 				this.log('debug', `MIDI Connected to ${this.config.host}`)
 				this.updateStatus(InstanceStatus.Ok)
-				this.getMuteInfoFromDevice()
+				this.performReadoutAfterConnected()
 			})
 		}
 	}
@@ -271,11 +289,11 @@ class AHMInstance extends InstanceBase {
 				break
 			case 176:
 				// level change on input
-				inputNum = this.hexToDec(data[2]) + 1
+				let inputLvlChangeNum = this.hexToDec(data[2]) + 1
 				let level = this.hexToDec(data[6])
-				let variableName = Helpers.getVarNameInputLevel(inputNum)
+				let variableName = Helpers.getVarNameInputLevel(inputLvlChangeNum)
 
-				this.log('debug', `Input ${inputNum} has new level: ${level} (dec) = ${this.getDbuValue(level)} (dBu), changing variable ${variableName}`)
+				this.log('debug', `Input ${inputLvlChangeNum} has new level: ${level} (dec) = ${this.getDbuValue(level)} (dBu), changing variable ${variableName}`)
 
 				this.setVariableValues({ [variableName]: this.getDbuValue(level) })
 				
