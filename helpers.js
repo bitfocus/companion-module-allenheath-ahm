@@ -45,3 +45,11 @@ export function getChoicesArrayOf1DArray(arr) {
 export function getVarNameInputLevel(inputNum) {
     return `ip_${inputNum}_lvl`;
 } 
+
+ /**
+ * Returns the variable name of the variable that displays the zones's current level.
+ * @param zoneNum Integer number of the Zone channel
+ */
+ export function getVarNameZoneLevel(zoneNum) {
+    return `zn_${zoneNum}_lvl`;
+} 

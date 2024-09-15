@@ -134,30 +134,39 @@ class AHMInstance extends InstanceBase {
 		// get input info
 		let unitInAmount = this.numberOfInputs;
 		for (let index = 0; index < unitInAmount; index++) {
-			this.requestMuteInfo(0, index) // inputs = 0
+			this.requestMuteInfo(Constants.ChannelType.Input, index)
 			await this.sleep(150)
-			this.requestLevelInfo(index) // level info
+			this.requestLevelInfo(Constants.ChannelType.Input, index)
 			await this.sleep(150)
 		}
 		// get zone info
 		let unitZonesAmount = this.numberOfZones;
 		for (let index = 0; index < unitZonesAmount; index++) {
-			this.requestMuteInfo(1, index) // zones = 1
+			this.requestMuteInfo(Constants.ChannelType.Zone, index)
+			await this.sleep(150)
+			this.requestLevelInfo(Constants.ChannelType.Zone, index)
 			await this.sleep(150)
 		}
 	}
 
-	requestMuteInfo(channel, number) {
+	requestMuteInfo(chType, chNumber) {
+		if(chType != Constants.ChannelType.Input && chType != Constants.ChannelType.Zone) {
+			return;
+		}
+
 		let buffer = [Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12, 0x01, 0x00,
-			parseInt(channel), 0x01, 0x09,
-			parseInt(number), 0xf7
+			parseInt(chType), 0x01, 0x09,	parseInt(chNumber), 0xf7
 		])]
 		this.sendCommand(buffer)
 	}
 
-	requestLevelInfo(inputNum) {
+	requestLevelInfo(chType, chNumber) {
+		if(chType != Constants.ChannelType.Input && chType != Constants.ChannelType.Zone) {
+			return;
+		}
+
 		let buffer = [Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12, 0x01, 0x00, 
-			0x00, 0x01, 0x0b, 0x17, inputNum, 0xf7
+			parseInt(chType), 0x01, 0x0b, 0x17, chNumber, 0xf7
 		])]
 		this.sendCommand(buffer)
 	}
@@ -290,12 +299,23 @@ class AHMInstance extends InstanceBase {
 			case 176:
 				// level change on input
 				let inputLvlChangeNum = this.hexToDec(data[2]) + 1
-				let level = this.hexToDec(data[6])
-				let variableName = Helpers.getVarNameInputLevel(inputLvlChangeNum)
+				let levelInput = this.hexToDec(data[6])
+				let variableNameInput = Helpers.getVarNameInputLevel(inputLvlChangeNum)
 
-				this.log('debug', `Input ${inputLvlChangeNum} has new level: ${level} (dec) = ${this.getDbuValue(level)} (dBu), changing variable ${variableName}`)
+				this.log('debug', `Input ${inputLvlChangeNum} has new level: ${levelInput} (dec) = ${this.getDbuValue(levelInput)} (dBu), changing variable ${variableNameInput}`)
 
-				this.setVariableValues({ [variableName]: this.getDbuValue(level) })
+				this.setVariableValues({ [variableNameInput]: this.getDbuValue(levelInput) })
+				
+				break
+			case 177:
+				// level change on zone
+				let zoneLvlChangeNum = this.hexToDec(data[2]) + 1
+				let levelZone = this.hexToDec(data[6])
+				let variableNameZone = Helpers.getVarNameZoneLevel(zoneLvlChangeNum)
+
+				this.log('debug', `Zone ${zoneLvlChangeNum} has new level: ${levelZone} (dec) = ${this.getDbuValue(levelZone)} (dBu), changing variable ${variableNameZone}`)
+
+				this.setVariableValues({ [variableNameZone]: this.getDbuValue(levelZone) })
 				
 				break
 			default:

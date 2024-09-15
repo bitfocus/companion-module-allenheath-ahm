@@ -42,7 +42,7 @@ export function getActions() {
 		return [
 			{
 				type: 'dropdown',
-				id: 'inputNum',
+				id: 'number',
 				label: name,
 				default: 0,
 				choices: Helpers.getChoicesArrayWithIncrementingNumbers(name, qty, offset),
@@ -62,7 +62,7 @@ export function getActions() {
 		return [
 			{
 				type: 'dropdown',
-				id: 'inputNum',
+				id: 'number',
 				label: name,
 				default: 0,
 				choices: Helpers.getChoicesArrayWithIncrementingNumbers(name, qty, offset),
@@ -79,6 +79,46 @@ export function getActions() {
 				],
 			}
 		]
+	}
+
+	// action: action of callback
+	// type: 0 for input, 1 for zone
+	this.setLevelCallback = async (action, type) => {
+		if(type != Constants.ChannelType.Input && type != Constants.ChannelType.Zone) {
+			return;
+		}
+
+		let typeCodeSetLevel = parseInt(0xB0 + type)  // type code for Command "Channel Level"
+		let typeCodeGetLevel = parseInt(0x00 + type)  // type code for Command "Get Channel Level"
+		let chNumber = parseInt(action.options.number)
+		let levelDec = parseInt(action.options.level)
+
+		let buffers = [Buffer.from([typeCodeSetLevel, 0x63, chNumber, typeCodeSetLevel, 0x62, 0x17, typeCodeSetLevel, 0x06, levelDec])]
+		this.sendCommand(buffers)
+
+		// wait until device has processed first command and then send "Get Channel Level" command so the response triggers the variable to be updated
+		await this.sleep(150)
+		buffers = [Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12,	0x01, 0x00, typeCodeGetLevel, 0x01, 0x0b, 0x17, chNumber, 0xf7])]
+		this.sendCommand(buffers)
+	}
+
+	this.incDecLevelCallback = async (action, type) => {
+		if(type != Constants.ChannelType.Input && type != Constants.ChannelType.Zone) {
+			return;
+		}
+
+		let typeCodeSetLevel = parseInt(0xB0 + type)  // type code for Command "Level Increment / Decrement"
+		let typeCodeGetLevel = parseInt(0x00 + type)  // type code for Command "Get Channel Level"
+		let chNumber = parseInt(action.options.number)
+		let incdecSelector = action.options.incdec == 'inc' ? 0x7F : 0x3F;
+
+		let buffers = [Buffer.from([typeCodeSetLevel, 0x63, chNumber, typeCodeSetLevel, 0x62, 0x20, typeCodeSetLevel, 0x06, incdecSelector])]
+		this.sendCommand(buffers)
+
+		// wait until device has processed first command and then send "Get Channel Level" command so the response triggers the variable to be updated
+		await this.sleep(150)
+		buffers = [Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12,	0x01, 0x00, typeCodeGetLevel, 0x01, 0x0b, 0x17, chNumber, 0xf7])]
+		this.sendCommand(buffers)
 	}
 
 	actions['mute_input'] = {
@@ -168,35 +208,25 @@ export function getActions() {
 	actions['set_level_input'] = {
 		name: 'Set Level of Input',
 		options: this.setLevelOptions('Input', this.numberOfInputs, -1),
-		callback: async (action) => {
-			let inputNum = parseInt(action.options.inputNum)
-			let levelDec = parseInt(action.options.level)
-
-			let buffers = [Buffer.from([0xB0, 0x63, inputNum, 0xB0, 0x62, 0x17, 0xB0, 0x06, levelDec])]
-			this.sendCommand(buffers)
-
-			// wait until device has processed first command and then send "Get Channel Level" command so the response triggers the variable to be updated
-			await this.sleep(150)
-			buffers = [Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12,	0x01, 0x00, 0x00, 0x01, 0x0b, 0x17, inputNum, 0xf7])]
-			this.sendCommand(buffers)
-		},
+		callback: async (action) => { this.setLevelCallback(action, Constants.ChannelType.Input) }
 	}
 
 	actions['inc_dec_level_input'] = {
 		name: 'Increment/Decrement Level of Input',
 		options: this.incDecOptions('Input', this.numberOfInputs, -1),
-		callback: async (action) => {
-			let inputNum = parseInt(action.options.inputNum)
-			let incdecSelector = action.options.incdec == 'inc' ? 0x7F : 0x3F;
+		callback: async (action) => { this.incDecLevelCallback(action, Constants.ChannelType.Input) }
+	}
 
-			let buffers = [Buffer.from([0xB0, 0x63, inputNum, 0xB0, 0x62, 0x20, 0xB0, 0x06, incdecSelector])]
-			this.sendCommand(buffers)
+	actions['set_level_zone'] = {
+		name: 'Set Level of Zone',
+		options: this.setLevelOptions('Zone', this.numberOfZones, -1),
+		callback: async (action) => { this.setLevelCallback(action, Constants.ChannelType.Zone) }
+	}
 
-			// wait until device has processed first command and then send "Get Channel Level" command so the response triggers the variable to be updated
-			await this.sleep(150)
-			buffers = [Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12,	0x01, 0x00, 0x00, 0x01, 0x0b, 0x17, inputNum, 0xf7])]
-			this.sendCommand(buffers)
-		},
+	actions['inc_dec_level_zone'] = {
+		name: 'Increment/Decrement Level of Zone',
+		options: this.incDecOptions('Input', this.numberOfZones, -1),
+		callback: async (action) => { this.incDecLevelCallback(action, Constants.ChannelType.Zone) }
 	}
 
 	// actions['get_phantom'] = {
