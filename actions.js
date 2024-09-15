@@ -2,6 +2,7 @@ import * as Helpers from './helpers.js'
 import * as Constants from './constants.js'
 
 const PRESET_COUNT = 500;
+const PLAYBACK_COUNT = 127;
 
 export function getActions() {
 	let actions = {}
@@ -77,6 +78,19 @@ export function getActions() {
 					{ id: 'inc', label: 'Increment' },
 					{ id: 'dec', label: 'Decrement' },
 				],
+			}
+		]
+	}
+
+	this.playbackChannelOptions = (name) => {
+		return [
+			{
+				type: 'dropdown',
+				id: 'playbackChannel',
+				label: name,
+				default: 0,
+				choices: Helpers.getChoicesArrayOfKeyValueObject(Constants.PlaybackChannel),
+				minChoicesForSearch: 0,
 			}
 		]
 	}
@@ -167,6 +181,37 @@ export function getActions() {
 		},
 	}
 
+	actions['playback_track'] = {
+		name: 'Playback Track',
+		options: this.listOptions('Playback Track', PLAYBACK_COUNT, -1).concat(this.playbackChannelOptions('Playback Channel')),
+		callback: (action) => {
+			let trackNumber = parseInt(action.options.number)
+			let playbackChannel = parseInt(action.options.playbackChannel)
+
+			console.log(`action playback_track: Got Callback with paramters Tracknumer: ${action.options.number} and playbackChannel ${action.options.playbackChannel}. PlaybackChannel is Stereo = ${action.options.playbackChannel == Constants.PlaybackChannel.Stereo}`)
+
+			let buffers = [
+				Buffer.from([
+					0xf0, 0x00,	0x00, 0x1a,	0x50, 0x12, 0x01, 0x00,
+					0x00, 0x06, playbackChannel, trackNumber, 0xF7
+				]),
+			]
+
+			// TODO does not yet work!
+			// overwrite buffers and leave playback channel byte away if stereo is chosen
+			// if(action.options.playbackChannel == Constants.PlaybackChannel.Stereo) {
+			// 	buffers = [
+			// 		Buffer.from([
+			// 			0xf0, 0x00,	0x00, 0x1a,	0x50, 0x12, 0x01, 0x00,
+			// 			0x00, 0x06, 0x10, trackNumber, 0xF7
+			// 		]),
+			// 	]
+			// } 
+
+			this.sendCommand(buffers)
+		},
+	}
+
 	actions['input_to_zone'] = {
 		name: 'Mute Input to Zone',
 		options: this.muteOptions('Input', this.numberOfInputs, -1).concat(this.listOptions('Zone', this.numberOfZones, -1)),
@@ -176,21 +221,8 @@ export function getActions() {
 
 			let buffers = [
 				Buffer.from([
-					0xf0,
-					0x00,
-					0x00,
-					0x1a,
-					0x50,
-					0x12,
-					0x01,
-					0x00,
-					0x00,
-					0x03,
-					inputNumber,
-					0x01,
-					zoneNumber,
-					action.options.mute ? 0x7f : 0x3f,
-					0xf7,
+					0xf0, 0x00,	0x00, 0x1a,	0x50, 0x12, 0x01, 0x00,
+					0x00, 0x03, inputNumber, 0x01, zoneNumber, action.options.mute ? 0x7f : 0x3f, 0xf7,
 				]),
 			]
 			this.sendCommand(buffers)

@@ -38,6 +38,24 @@ export function getChoicesArrayOf1DArray(arr) {
     return choices;
 } 
 
+/**
+ * Generates a Dropdown Choices Array with values of an object. 
+ * The objects keys are assigned as labels of the choice array, the value is assigned the id.
+ * Output:
+ * { id: 'Value of Object element 1', label: 'Key of Object element 1' }, 
+ * { id: 'Value of Object element 2', label: 'Key of Object element 2' }, 
+ * ...
+ * { id: 'Value of Object element x', label: 'Key of Object element x' }, 
+ * @param arr Object with key-value elements (e.g. const obj = { Element1: 0, Element2: 50 } )
+ */
+export function getChoicesArrayOfKeyValueObject(kvObj) {
+    let choices = []
+    for (const [key, value] of Object.entries(kvObj)) {
+        choices.push({ label: `${key}`, id: value })
+    }
+    return choices;
+} 
+
  /**
  * Returns the variable name of the variable that displays the input's current level.
  * @param inputNum Integer number of the Input channel
