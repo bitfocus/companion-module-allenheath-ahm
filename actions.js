@@ -188,7 +188,7 @@ export function getActions() {
 			let trackNumber = parseInt(action.options.number)
 			let playbackChannel = parseInt(action.options.playbackChannel)
 
-			console.log(`action playback_track: Got Callback with paramters Tracknumer: ${action.options.number} and playbackChannel ${action.options.playbackChannel}. PlaybackChannel is Stereo = ${action.options.playbackChannel == Constants.PlaybackChannel.Stereo}`)
+			// console.log(`action playback_track: Got Callback with parameters trackNumber: ${action.options.number} and playbackChannel ${action.options.playbackChannel}.`)
 
 			let buffers = [
 				Buffer.from([
@@ -196,17 +196,6 @@ export function getActions() {
 					0x00, 0x06, playbackChannel, trackNumber, 0xF7
 				]),
 			]
-
-			// TODO does not yet work!
-			// overwrite buffers and leave playback channel byte away if stereo is chosen
-			// if(action.options.playbackChannel == Constants.PlaybackChannel.Stereo) {
-			// 	buffers = [
-			// 		Buffer.from([
-			// 			0xf0, 0x00,	0x00, 0x1a,	0x50, 0x12, 0x01, 0x00,
-			// 			0x00, 0x06, 0x10, trackNumber, 0xF7
-			// 		]),
-			// 	]
-			// } 
 
 			this.sendCommand(buffers)
 		},

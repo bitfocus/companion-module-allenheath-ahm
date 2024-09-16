@@ -8,9 +8,8 @@ export const ChannelType = {
 }
 
 // Playback Channel for "Audio Playback" Command
-// for stereo the byte should be ignored, therefore 0xFF is an alibi-number
 export const PlaybackChannel = {
 	Mono1: 0,
 	Mono2: 1,
-    Stereo: 0xFF
+    Stereo: 2
 }
