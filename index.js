@@ -7,10 +7,9 @@ import UpgradeScripts from './upgrades.js'
 import * as Constants from './constants.js'
 import * as Helpers from './helpers.js'
 
-const MIDI_PORT = 51325;
+const MIDI_PORT = 51325
 
 class AHMInstance extends InstanceBase {
-
 	constructor(internal) {
 		super(internal)
 	}
@@ -27,9 +26,8 @@ class AHMInstance extends InstanceBase {
 		this.inputsToZonesMute = {}
 		this.zonesMute = this.createArray(this.numberOfZones)
 
-
 		// then set unit type according to config; reduces traffic if smaller AHM is used
-		this.initUnitType();
+		this.initUnitType()
 		this.initTCP()
 		this.initActions()
 		this.initFeedbacks()
@@ -44,28 +42,28 @@ class AHMInstance extends InstanceBase {
 		this.log('debug', 'destroy')
 	}
 
-	initUnitType(){
-		switch(this.config.ahm_type){
+	initUnitType() {
+		switch (this.config.ahm_type) {
 			case 'ahm16':
-				this.log('info', 'Set Unit Type to AHM-16.');
+				this.log('info', 'Set Unit Type to AHM-16.')
 				this.numberOfInputs = 16
 				this.numberOfZones = 16
-				break;
+				break
 			case 'ahm32':
-				this.log('info', 'Set Unit Type to AHM-32.');
+				this.log('info', 'Set Unit Type to AHM-32.')
 				this.numberOfInputs = 32
 				this.numberOfZones = 32
-				break;
+				break
 			case 'ahm64':
 			default:
-				this.log('info', 'Set Unit Type to AHM-64.');
-				break;
+				this.log('info', 'Set Unit Type to AHM-64.')
+				break
 		}
 	}
 
 	async configUpdated(config) {
 		this.config = config
-		this.initUnitChannelSize();
+		this.initUnitChannelSize()
 		this.initActions()
 		this.initVariables()
 		this.initTCP()
@@ -86,12 +84,12 @@ class AHMInstance extends InstanceBase {
 				id: 'ahm_type',
 				label: 'Type of Device (Re-enable required after change)',
 				width: 6,
-				choices:[
+				choices: [
 					{ id: 'ahm64', label: 'AHM-64' },
 					{ id: 'ahm32', label: 'AHM-32' },
 					{ id: 'ahm16', label: 'AHM-16' },
 				],
-				default: 'ahm64'
+				default: 'ahm64',
 			},
 		]
 	}
@@ -123,7 +121,7 @@ class AHMInstance extends InstanceBase {
 
 	async updateLevelVariables() {
 		// get inputs
-		let unitInAmount = this.numberOfInputs;
+		let unitInAmount = this.numberOfInputs
 		for (let index = 0; index < unitInAmount; index++) {
 			this.requestLevelInfo(index) // inputs = 0
 			await this.sleep(150)
@@ -132,7 +130,7 @@ class AHMInstance extends InstanceBase {
 
 	async performReadoutAfterConnected() {
 		// get input info
-		let unitInAmount = this.numberOfInputs;
+		let unitInAmount = this.numberOfInputs
 		for (let index = 0; index < unitInAmount; index++) {
 			this.requestMuteInfo(Constants.ChannelType.Input, index)
 			await this.sleep(150)
@@ -140,7 +138,7 @@ class AHMInstance extends InstanceBase {
 			await this.sleep(150)
 		}
 		// get zone info
-		let unitZonesAmount = this.numberOfZones;
+		let unitZonesAmount = this.numberOfZones
 		for (let index = 0; index < unitZonesAmount; index++) {
 			this.requestMuteInfo(Constants.ChannelType.Zone, index)
 			await this.sleep(150)
@@ -150,27 +148,40 @@ class AHMInstance extends InstanceBase {
 	}
 
 	requestMuteInfo(chType, chNumber) {
-		if(chType != Constants.ChannelType.Input && chType != Constants.ChannelType.Zone) {
-			return;
+		if (chType != Constants.ChannelType.Input && chType != Constants.ChannelType.Zone) {
+			return
 		}
 
-		let buffer = [Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12, 0x01, 0x00,
-			parseInt(chType), 0x01, 0x09,	parseInt(chNumber), 0xf7
-		])]
+		let buffer = [
+			Buffer.from([
+				0xf0,
+				0x00,
+				0x00,
+				0x1a,
+				0x50,
+				0x12,
+				0x01,
+				0x00,
+				parseInt(chType),
+				0x01,
+				0x09,
+				parseInt(chNumber),
+				0xf7,
+			]),
+		]
 		this.sendCommand(buffer)
 	}
 
 	requestLevelInfo(chType, chNumber) {
-		if(chType != Constants.ChannelType.Input && chType != Constants.ChannelType.Zone) {
-			return;
+		if (chType != Constants.ChannelType.Input && chType != Constants.ChannelType.Zone) {
+			return
 		}
 
-		let buffer = [Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12, 0x01, 0x00, 
-			parseInt(chType), 0x01, 0x0b, 0x17, chNumber, 0xf7
-		])]
+		let buffer = [
+			Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12, 0x01, 0x00, parseInt(chType), 0x01, 0x0b, 0x17, chNumber, 0xf7]),
+		]
 		this.sendCommand(buffer)
 	}
-
 
 	createArray(size, extraArrayLength) {
 		let array = new Array(size)
@@ -185,15 +196,14 @@ class AHMInstance extends InstanceBase {
 	}
 
 	/* Make method accessible to functions of other files and log variable changes */
-    setVariableValues(values) {
+	setVariableValues(values) {
 		this.log('debug', `Updating variables: ${JSON.stringify(values)} `)
-		super.setVariableValues(values);
-	} 
-	
+		super.setVariableValues(values)
+	}
+
 	/* Return corresponding dBu Value to decimal number */
 	getDbuValue(dezValue) {
-		if(Number.isInteger(dezValue) == false || dezValue > 127 || dezValue < 0)
-		{
+		if (Number.isInteger(dezValue) == false || dezValue > 127 || dezValue < 0) {
 			return NaN
 		}
 
@@ -302,10 +312,13 @@ class AHMInstance extends InstanceBase {
 				let levelInput = this.hexToDec(data[6])
 				let variableNameInput = Helpers.getVarNameInputLevel(inputLvlChangeNum)
 
-				this.log('debug', `Input ${inputLvlChangeNum} has new level: ${levelInput} (dec) = ${this.getDbuValue(levelInput)} (dBu), changing variable ${variableNameInput}`)
+				this.log(
+					'debug',
+					`Input ${inputLvlChangeNum} has new level: ${levelInput} (dec) = ${this.getDbuValue(levelInput)} (dBu), changing variable ${variableNameInput}`,
+				)
 
 				this.setVariableValues({ [variableNameInput]: this.getDbuValue(levelInput) })
-				
+
 				break
 			case 177:
 				// level change on zone
@@ -313,10 +326,13 @@ class AHMInstance extends InstanceBase {
 				let levelZone = this.hexToDec(data[6])
 				let variableNameZone = Helpers.getVarNameZoneLevel(zoneLvlChangeNum)
 
-				this.log('debug', `Zone ${zoneLvlChangeNum} has new level: ${levelZone} (dec) = ${this.getDbuValue(levelZone)} (dBu), changing variable ${variableNameZone}`)
+				this.log(
+					'debug',
+					`Zone ${zoneLvlChangeNum} has new level: ${levelZone} (dec) = ${this.getDbuValue(levelZone)} (dBu), changing variable ${variableNameZone}`,
+				)
 
 				this.setVariableValues({ [variableNameZone]: this.getDbuValue(levelZone) })
-				
+
 				break
 			default:
 				//console.log('Extra data coming in')

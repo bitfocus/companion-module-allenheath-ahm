@@ -5,37 +5,37 @@ export function getVariables() {
 	const variableInitValuesArray = []
 
 	// generate input level variables
-	let unitInAmount = this.numberOfInputs;
+	let unitInAmount = this.numberOfInputs
 	for (let i = 1; i <= unitInAmount; i++) {
 		let varId = Helpers.getVarNameInputLevel(i)
 		variableDefinitions.push({
 			name: `Input ${i} Level`,
-			variableId: varId
+			variableId: varId,
 		})
 		// initialize with ?
 		variableInitValuesArray.push({
-			[varId]: '?'
+			[varId]: '?',
 		})
 	}
 
 	// generate zone level variables
-	let unitZoneAmount = this.numberOfZones;
+	let unitZoneAmount = this.numberOfZones
 	for (let i = 1; i <= unitZoneAmount; i++) {
 		let varId = Helpers.getVarNameZoneLevel(i)
 		variableDefinitions.push({
 			name: `Zone ${i} Level`,
-			variableId: varId
+			variableId: varId,
 		})
 		// initialize with ?
 		variableInitValuesArray.push({
-			[varId]: '?'
+			[varId]: '?',
 		})
 	}
 
 	// flatten init Value Array (convert into single object instead of array)
 	const variableInitValues = variableInitValuesArray.reduce((acc, obj) => {
-		return {...acc, ...obj};
-	}, {});
+		return { ...acc, ...obj }
+	}, {})
 
 	return [variableDefinitions, variableInitValues]
 }
