@@ -1,8 +1,8 @@
 import * as Helpers from './helpers.js'
 import * as Constants from './constants.js'
 
-const PRESET_COUNT = 500;
-const PLAYBACK_COUNT = 127;
+const PRESET_COUNT = 500
+const PLAYBACK_COUNT = 127
 
 export function getActions() {
 	let actions = {}
@@ -54,8 +54,8 @@ export function getActions() {
 				id: 'level',
 				label: 'Set Level (dBu)',
 				default: '0',
-				choices: Helpers.getChoicesArrayOf1DArray(Constants.dbu_Values)
-			}
+				choices: Helpers.getChoicesArrayOf1DArray(Constants.dbu_Values),
+			},
 		]
 	}
 
@@ -78,7 +78,7 @@ export function getActions() {
 					{ id: 'inc', label: 'Increment' },
 					{ id: 'dec', label: 'Decrement' },
 				],
-			}
+			},
 		]
 	}
 
@@ -91,47 +91,65 @@ export function getActions() {
 				default: 0,
 				choices: Helpers.getChoicesArrayOfKeyValueObject(Constants.PlaybackChannel),
 				minChoicesForSearch: 0,
-			}
+			},
 		]
 	}
 
 	// action: action of callback
 	// type: 0 for input, 1 for zone
 	this.setLevelCallback = async (action, type) => {
-		if(type != Constants.ChannelType.Input && type != Constants.ChannelType.Zone) {
-			return;
+		if (type != Constants.ChannelType.Input && type != Constants.ChannelType.Zone) {
+			return
 		}
 
-		let typeCodeSetLevel = parseInt(0xB0 + type)  // type code for Command "Channel Level"
-		let typeCodeGetLevel = parseInt(0x00 + type)  // type code for Command "Get Channel Level"
+		let typeCodeSetLevel = parseInt(0xb0 + type) // type code for Command "Channel Level"
+		let typeCodeGetLevel = parseInt(0x00 + type) // type code for Command "Get Channel Level"
 		let chNumber = parseInt(action.options.number)
 		let levelDec = parseInt(action.options.level)
 
-		let buffers = [Buffer.from([typeCodeSetLevel, 0x63, chNumber, typeCodeSetLevel, 0x62, 0x17, typeCodeSetLevel, 0x06, levelDec])]
+		let buffers = [
+			Buffer.from([typeCodeSetLevel, 0x63, chNumber, typeCodeSetLevel, 0x62, 0x17, typeCodeSetLevel, 0x06, levelDec]),
+		]
 		this.sendCommand(buffers)
 
 		// wait until device has processed first command and then send "Get Channel Level" command so the response triggers the variable to be updated
 		await this.sleep(150)
-		buffers = [Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12,	0x01, 0x00, typeCodeGetLevel, 0x01, 0x0b, 0x17, chNumber, 0xf7])]
+		buffers = [
+			Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12, 0x01, 0x00, typeCodeGetLevel, 0x01, 0x0b, 0x17, chNumber, 0xf7]),
+		]
 		this.sendCommand(buffers)
 	}
 
 	this.incDecLevelCallback = async (action, type) => {
-		if(type != Constants.ChannelType.Input && type != Constants.ChannelType.Zone) {
-			return;
+		if (type != Constants.ChannelType.Input && type != Constants.ChannelType.Zone) {
+			return
 		}
 
-		let typeCodeSetLevel = parseInt(0xB0 + type)  // type code for Command "Level Increment / Decrement"
-		let typeCodeGetLevel = parseInt(0x00 + type)  // type code for Command "Get Channel Level"
+		let typeCodeSetLevel = parseInt(0xb0 + type) // type code for Command "Level Increment / Decrement"
+		let typeCodeGetLevel = parseInt(0x00 + type) // type code for Command "Get Channel Level"
 		let chNumber = parseInt(action.options.number)
-		let incdecSelector = action.options.incdec == 'inc' ? 0x7F : 0x3F;
+		let incdecSelector = action.options.incdec == 'inc' ? 0x7f : 0x3f
 
-		let buffers = [Buffer.from([typeCodeSetLevel, 0x63, chNumber, typeCodeSetLevel, 0x62, 0x20, typeCodeSetLevel, 0x06, incdecSelector])]
+		let buffers = [
+			Buffer.from([
+				typeCodeSetLevel,
+				0x63,
+				chNumber,
+				typeCodeSetLevel,
+				0x62,
+				0x20,
+				typeCodeSetLevel,
+				0x06,
+				incdecSelector,
+			]),
+		]
 		this.sendCommand(buffers)
 
 		// wait until device has processed first command and then send "Get Channel Level" command so the response triggers the variable to be updated
 		await this.sleep(150)
-		buffers = [Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12,	0x01, 0x00, typeCodeGetLevel, 0x01, 0x0b, 0x17, chNumber, 0xf7])]
+		buffers = [
+			Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12, 0x01, 0x00, typeCodeGetLevel, 0x01, 0x0b, 0x17, chNumber, 0xf7]),
+		]
 		this.sendCommand(buffers)
 	}
 
@@ -183,7 +201,9 @@ export function getActions() {
 
 	actions['playback_track'] = {
 		name: 'Playback Track',
-		options: this.listOptions('Playback Track', PLAYBACK_COUNT, -1).concat(this.playbackChannelOptions('Playback Channel')),
+		options: this.listOptions('Playback Track', PLAYBACK_COUNT, -1).concat(
+			this.playbackChannelOptions('Playback Channel'),
+		),
 		callback: (action) => {
 			let trackNumber = parseInt(action.options.number)
 			let playbackChannel = parseInt(action.options.playbackChannel)
@@ -191,10 +211,7 @@ export function getActions() {
 			// console.log(`action playback_track: Got Callback with parameters trackNumber: ${action.options.number} and playbackChannel ${action.options.playbackChannel}.`)
 
 			let buffers = [
-				Buffer.from([
-					0xf0, 0x00,	0x00, 0x1a,	0x50, 0x12, 0x01, 0x00,
-					0x00, 0x06, playbackChannel, trackNumber, 0xF7
-				]),
+				Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12, 0x01, 0x00, 0x00, 0x06, playbackChannel, trackNumber, 0xf7]),
 			]
 
 			this.sendCommand(buffers)
@@ -203,15 +220,30 @@ export function getActions() {
 
 	actions['input_to_zone'] = {
 		name: 'Mute Input to Zone',
-		options: this.muteOptions('Input', this.numberOfInputs, -1).concat(this.listOptions('Zone', this.numberOfZones, -1)),
+		options: this.muteOptions('Input', this.numberOfInputs, -1).concat(
+			this.listOptions('Zone', this.numberOfZones, -1),
+		),
 		callback: (action) => {
 			let inputNumber = parseInt(action.options.mute_number)
 			let zoneNumber = parseInt(action.options.number)
 
 			let buffers = [
 				Buffer.from([
-					0xf0, 0x00,	0x00, 0x1a,	0x50, 0x12, 0x01, 0x00,
-					0x00, 0x03, inputNumber, 0x01, zoneNumber, action.options.mute ? 0x7f : 0x3f, 0xf7,
+					0xf0,
+					0x00,
+					0x00,
+					0x1a,
+					0x50,
+					0x12,
+					0x01,
+					0x00,
+					0x00,
+					0x03,
+					inputNumber,
+					0x01,
+					zoneNumber,
+					action.options.mute ? 0x7f : 0x3f,
+					0xf7,
 				]),
 			]
 			this.sendCommand(buffers)
@@ -229,25 +261,33 @@ export function getActions() {
 	actions['set_level_input'] = {
 		name: 'Set Level of Input',
 		options: this.setLevelOptions('Input', this.numberOfInputs, -1),
-		callback: async (action) => { this.setLevelCallback(action, Constants.ChannelType.Input) }
+		callback: async (action) => {
+			this.setLevelCallback(action, Constants.ChannelType.Input)
+		},
 	}
 
 	actions['inc_dec_level_input'] = {
 		name: 'Increment/Decrement Level of Input',
 		options: this.incDecOptions('Input', this.numberOfInputs, -1),
-		callback: async (action) => { this.incDecLevelCallback(action, Constants.ChannelType.Input) }
+		callback: async (action) => {
+			this.incDecLevelCallback(action, Constants.ChannelType.Input)
+		},
 	}
 
 	actions['set_level_zone'] = {
 		name: 'Set Level of Zone',
 		options: this.setLevelOptions('Zone', this.numberOfZones, -1),
-		callback: async (action) => { this.setLevelCallback(action, Constants.ChannelType.Zone) }
+		callback: async (action) => {
+			this.setLevelCallback(action, Constants.ChannelType.Zone)
+		},
 	}
 
 	actions['inc_dec_level_zone'] = {
 		name: 'Increment/Decrement Level of Zone',
 		options: this.incDecOptions('Input', this.numberOfZones, -1),
-		callback: async (action) => { this.incDecLevelCallback(action, Constants.ChannelType.Zone) }
+		callback: async (action) => {
+			this.incDecLevelCallback(action, Constants.ChannelType.Zone)
+		},
 	}
 
 	// actions['get_phantom'] = {
