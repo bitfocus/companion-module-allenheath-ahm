@@ -247,10 +247,19 @@ export function getActions() {
 				]),
 			]
 			this.sendCommand(buffers)
-			if (this.inputsToZonesMute[inputNumber + 1]?.[zoneNumber + 1]) {
-				this.inputsToZonesMute[inputNumber + 1][zoneNumber + 1] = action.options.mute ? 1 : 0
-			} else {
-				this.inputsToZonesMute[inputNumber + 1] = {}
+			
+			// check if the array inputsToZonesMute already has an entry for the input
+			if (this.inputsToZonesMute[inputNumber + 1] == null) {
+				// if it is undefined, create the entry
+				this.inputsToZonesMute[inputNumber + 1] = new Array(this.numberOfZones + 1).fill(0)
+				// console.log(`action input_to_zone: Created Array for inputNumber=${inputNumber + 1} in this.inputsToZonesMute.`)
+			}
+			// if the input Array existed, it is still possible that the Array cannot be accessed => Write nothing to variable and report error via log
+			if (this.inputsToZonesMute[inputNumber + 1][zoneNumber + 1] == null) {
+				console.log(`Error: action input_to_zone: Cannot access Mute Input ${inputNumber + 1} to Zone ${zoneNumber + 1} State.`)
+			}
+			else {
+				// happy path: update mute state
 				this.inputsToZonesMute[inputNumber + 1][zoneNumber + 1] = action.options.mute ? 1 : 0
 			}
 
