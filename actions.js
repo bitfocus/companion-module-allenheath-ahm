@@ -43,7 +43,7 @@ export function getActions() {
 		return [
 			{
 				type: 'dropdown',
-				id: 'number',
+				id: 'setlvl_ch_number',
 				label: name,
 				default: 0,
 				choices: Helpers.getChoicesArrayWithIncrementingNumbers(name, qty, offset),
@@ -63,7 +63,7 @@ export function getActions() {
 		return [
 			{
 				type: 'dropdown',
-				id: 'number',
+				id: 'incdec_ch_number',
 				label: name,
 				default: 0,
 				choices: Helpers.getChoicesArrayWithIncrementingNumbers(name, qty, offset),
@@ -104,7 +104,7 @@ export function getActions() {
 
 		let typeCodeSetLevel = parseInt(0xb0 + type) // type code for Command "Channel Level"
 		let typeCodeGetLevel = parseInt(0x00 + type) // type code for Command "Get Channel Level"
-		let chNumber = parseInt(action.options.number)
+		let chNumber = parseInt(action.options.setlvl_ch_number)
 		let levelDec = parseInt(action.options.level)
 
 		let buffers = [
@@ -127,7 +127,7 @@ export function getActions() {
 
 		let typeCodeSetLevel = parseInt(0xb0 + type) // type code for Command "Level Increment / Decrement"
 		let typeCodeGetLevel = parseInt(0x00 + type) // type code for Command "Get Channel Level"
-		let chNumber = parseInt(action.options.number)
+		let chNumber = parseInt(action.options.incdec_ch_number)
 		let incdecSelector = action.options.incdec == 'inc' ? 0x7f : 0x3f
 
 		let buffers = [
