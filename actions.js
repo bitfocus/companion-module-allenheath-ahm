@@ -153,6 +153,24 @@ export function getActions() {
 		this.sendCommand(buffers)
 	}
 
+	this.incDecSendLevelCallback = async (action, type) => {
+		if (type != Constants.SendType.InputToZone && type != Constants.SendType.ZoneToZone) {
+			return
+		}
+
+		let chType = parseInt(0x00 + (type >> 4)) // right shift by 4, results in only high nibble (ch type)
+		let sendChType = parseInt(0x00 + (type & 0x0F)) // bitwise and with low nibble to only get its value (send type)
+		let chNumber = parseInt(action.options.incdec_ch_number)
+		let sendChNumber = parseInt(action.options.number)
+		let incdecSelector = action.options.incdec == 'inc' ? 0x7f : 0x3f
+
+		let buffers = [
+			Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12, 0x01, 0x00, chType, 0x04, chNumber, sendChType, sendChNumber, incdecSelector, 0xf7]),
+		]
+
+		this.sendCommand(buffers)
+	}
+
 	actions['mute_input'] = {
 		name: 'Mute Input',
 		options: this.muteOptions('Input', this.numberOfInputs, -1),
@@ -296,6 +314,26 @@ export function getActions() {
 		options: this.incDecOptions('Zone', this.numberOfZones, -1),
 		callback: async (action) => {
 			this.incDecLevelCallback(action, Constants.ChannelType.Zone)
+		},
+	}
+
+	actions['inc_dec_in_zn_send_level'] = {
+		name: 'Increment/Decrement Input to Zone Send Level',
+		options: this.incDecOptions('Input', this.numberOfInputs, -1).concat(
+			this.listOptions('Zone', this.numberOfZones, -1),
+		),
+		callback: async (action) => {
+			this.incDecSendLevelCallback(action, Constants.SendType.InputToZone)
+		},
+	}
+
+	actions['inc_dec_zn_zn_send_level'] = {
+		name: 'Increment/Decrement Zone to Zone Send Level',
+		options: this.incDecOptions('Zone', this.numberOfZones, -1).concat(
+			this.listOptions('Zone', this.numberOfZones, -1),
+		),
+		callback: async (action) => {
+			this.incDecSendLevelCallback(action, Constants.SendType.ZoneToZone)
 		},
 	}
 
