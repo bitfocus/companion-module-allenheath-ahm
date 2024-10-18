@@ -293,7 +293,7 @@ export function getActions() {
 
 	actions['inc_dec_level_zone'] = {
 		name: 'Increment/Decrement Level of Zone',
-		options: this.incDecOptions('Input', this.numberOfZones, -1),
+		options: this.incDecOptions('Zone', this.numberOfZones, -1),
 		callback: async (action) => {
 			this.incDecLevelCallback(action, Constants.ChannelType.Zone)
 		},
