@@ -23,7 +23,7 @@ class AHMInstance extends InstanceBase {
 		this.numberOfInputs = 64
 		this.numberOfZones = 64
 		this.inputsMute = this.createArray(this.numberOfInputs)
-		this.inputsToZonesMute = {}
+		this.inputsToZonesMute = []
 		this.zonesMute = this.createArray(this.numberOfZones)
 
 		// then set unit type according to config; reduces traffic if smaller AHM is used
