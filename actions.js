@@ -275,6 +275,7 @@ export function getActions() {
 			// if the input Array existed, it is still possible that the Array cannot be accessed => Write nothing to variable and report error via log
 			if (this.inputsToZonesMute[inputNumber + 1][zoneNumber + 1] == null) {
 				console.log(`Error: action input_to_zone: Cannot access Mute Input ${inputNumber + 1} to Zone ${zoneNumber + 1} State.`)
+				console.log(this.inputsToZonesMute)
 			}
 			else {
 				// happy path: update mute state
