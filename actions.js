@@ -98,7 +98,7 @@ export function getActions() {
 	// action: action of callback
 	// type: 0 for input, 1 for zone
 	this.setLevelCallback = async (action, type) => {
-		if (type != Constants.ChannelType.Input && type != Constants.ChannelType.Zone) {
+		if(Helpers.checkIfValueOfEnum(chType, Constants.ChannelType) == false) {
 			return
 		}
 
@@ -121,7 +121,7 @@ export function getActions() {
 	}
 
 	this.incDecLevelCallback = async (action, type) => {
-		if (type != Constants.ChannelType.Input && type != Constants.ChannelType.Zone) {
+		if(Helpers.checkIfValueOfEnum(chType, Constants.ChannelType) == false) {
 			return
 		}
 
@@ -154,12 +154,12 @@ export function getActions() {
 	}
 
 	this.incDecSendLevelCallback = async (action, type) => {
-		if (type != Constants.SendType.InputToZone && type != Constants.SendType.ZoneToZone) {
+		if (Helpers.checkIfValueOfEnum(type, Constants.SendType) == false) {
 			return
 		}
 
-		let chType = parseInt(0x00 + (type >> 4)) // right shift by 4, results in only high nibble (ch type)
-		let sendChType = parseInt(0x00 + (type & 0x0F)) // bitwise and with low nibble to only get its value (send type)
+		let chType = Helpers.getChTypeOfSendType(type)
+		let sendChType = Helpers.getSendChTypeOfSendType(type)
 		let chNumber = parseInt(action.options.incdec_ch_number)
 		let sendChNumber = parseInt(action.options.number)
 		let incdecSelector = action.options.incdec == 'inc' ? 0x7f : 0x3f

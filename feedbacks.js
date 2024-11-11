@@ -1,10 +1,32 @@
 import { combineRgb } from '@companion-module/base'
+import * as Constants from './constants.js'
 
 export function getFeedbacks() {
 	const feedbacks = {}
 
 	const ColorWhite = combineRgb(255, 255, 255)
 	const ColorRed = combineRgb(200, 0, 0)
+
+	// builds an object containing all relevant information to monitor a feedback of some type
+	this.buildFeedbackMonitoringObject = (feedback) => {
+		let extractedFeedbackInfo = {}
+		extractedFeedbackInfo.id = feedback.id
+
+		switch (feedback.feedbackId) {
+			case 'inputToZoneMute':
+				extractedFeedbackInfo.type = Constants.MonitoredFeedbackType.MuteState
+				extractedFeedbackInfo.sendType = Constants.SendType.InputToZone
+				extractedFeedbackInfo.channel = feedback.options.input
+				extractedFeedbackInfo.sendChannel = feedback.options.zone			  
+				break;
+	
+			default:
+				extractedFeedbackInfo.type = Constants.MonitoredFeedbackType.Undefined
+		}
+
+		return extractedFeedbackInfo
+	}
+
 
 	feedbacks['inputMute'] = {
 		type: 'boolean',
@@ -74,7 +96,7 @@ export function getFeedbacks() {
 			return this.inputsToZonesMute[parseInt(feedback.options.input)]?.[parseInt(feedback.options.zone)] == 1
 		},
 		subscribe: (feedback) => {
-			console.log('Feedback inputToZoneMute has new subscriber :', feedback)
+			this.monitoredFeedbacks.push(this.buildFeedbackMonitoringObject(feedback))
 		}	
 	}
 

@@ -71,3 +71,36 @@ export function getVarNameInputLevel(inputNum) {
 export function getVarNameZoneLevel(zoneNum) {
 	return `zn_${zoneNum}_lvl`
 }
+
+/**
+ * Checks if the value given is a value of the enum enumType. Logs an error if this is not the case.
+ * @param value value to check if it is part of enum enumType
+ * @param enumType enum to check wether value is value of
+ */
+export function checkIfValueOfEnum(value, enumType) {
+	if(Object.values(enumType).includes(value)){
+		return true
+	}
+	else{
+		console.error(`checkIfValueOfEnum: value '${value}' was found not to be of enum type '${enumType}'`)
+		return false
+	}
+}
+
+/**
+ * Returns the channel type of the sendType, so the type of channel that is the source of the send.
+ * Check if the parameter sendType really is a value of the enum SendType e.g. using function validateIsSendType.
+ * @param sendType Object of send type
+ */
+export function getChTypeOfSendType(sendType) {
+	return parseInt(0x00 + (sendType >> 4)) // right shift by 4, results in only high nibble (ch type)
+}
+
+/**
+ * Returns the send channel type of the sendType, so the type of channel that is the destination of the send.
+ * Check if the parameter sendType really is a value of the enum SendType e.g. using function validateIsSendType.
+ * @param sendType Object of send type
+ */
+export function getSendChTypeOfSendType(sendType) {
+	return parseInt(0x00 + (sendType & 0x0F)) // bitwise and with low nibble to only get its value (send type)
+}
