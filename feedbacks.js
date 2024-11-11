@@ -96,21 +96,15 @@ export function getFeedbacks() {
 			return this.inputsToZonesMute[parseInt(feedback.options.input)]?.[parseInt(feedback.options.zone)] == 1
 		},
 		subscribe: (feedback) => {
+			// add this feedback to the monitored feedbacks
 			this.monitoredFeedbacks.push(this.buildFeedbackMonitoringObject(feedback))
-			console.log("added")
-			console.log(feedback)
 		},
 		unsubscribe: (feedback) => {
+			// remove this feedback from the monitored feedbacks
 			// find index of feedback with this ID in the array
 			const feedbackIndex = this.monitoredFeedbacks.findIndex((monFeedback) => monFeedback.id == feedback.id);
-			console.log("removed")
-			console.log(feedback)
-
 			if (feedbackIndex > -1) { // only splice array when feedback was found
-				console.log("feedbackIndex > -1")
-
 				this.monitoredFeedbacks.splice(feedbackIndex, 1); // 2nd parameter means remove one item only
-				console.log("done removal")
 			}
 		}
 	}
