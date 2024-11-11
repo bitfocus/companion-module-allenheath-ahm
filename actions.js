@@ -267,7 +267,7 @@ export function getActions() {
 			this.sendCommand(buffers)
 
 			// manually update internal state, (internal state works with user-number, hence + 1)
-			updateSendMuteState(Constants.SendType.InputToZone, inputNumber + 1, zoneNumber + 1, action.options.mute ? 1 : 0)
+			this.updateSendMuteState(Constants.SendType.InputToZone, inputNumber + 1, zoneNumber + 1, action.options.mute ? 1 : 0)
 			
 			this.checkFeedbacks('inputToZoneMute')
 		},

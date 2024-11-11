@@ -414,11 +414,11 @@ class AHMInstance extends InstanceBase {
 				if (Array.isArray(this.inputsToZonesMute[channelNumber]) == false) {
 					// if there is no array, create the entry
 					this.inputsToZonesMute[channelNumber] = new Array(this.numberOfZones + 1).fill(0)
-					console.log(`processIncomingData: Created Array with amount=${this.numberOfZones + 1} for inputNumber=${channelNumber} in this.inputsToZonesMute.`)
+					console.log(`updateSendMuteState: Created Array with amount=${this.numberOfZones + 1} for inputNumber=${channelNumber} in this.inputsToZonesMute`)
 				}
 				// check if SubArray has incorrect format => If yes write nothing to variable and report error via log
 				if (typeof this.inputsToZonesMute[channelNumber][sendChannelNumber] === 'undefined') {
-					console.log(`Error: processIncomingData: Cannot access Mute Input ${channelNumber} to Zone ${sendChannelNumber} State.`)
+					console.log(`updateSendMuteState: Cannot access Mute Input ${channelNumber} to Zone ${sendChannelNumber} State.`)
 				}
 				else {
 					// happy path: update mute state
