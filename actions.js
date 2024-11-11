@@ -266,8 +266,8 @@ export function getActions() {
 			]
 			this.sendCommand(buffers)
 			
-			// check if the array inputsToZonesMute already has a SubArray for this input
-			if (Array.isArray(this.inputsToZonesMute[inputNumber + 1])) {
+			// check if the array inputsToZonesMute does not yet have a SubArray for this input
+			if (Array.isArray(this.inputsToZonesMute[inputNumber + 1]) == false) {
 				// if there is no array, create the entry
 				this.inputsToZonesMute[inputNumber + 1] = new Array(this.numberOfZones + 1).fill(0)
 				console.log(`action input_to_zone: Created Array with amount=${this.numberOfZones + 1} for inputNumber=${inputNumber + 1} in this.inputsToZonesMute.`)
