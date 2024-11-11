@@ -118,11 +118,11 @@ class AHMInstance extends InstanceBase {
 		this.setActionDefinitions(actions)
 	}
 
-	pollAllMonitoredFeedbacks() {
-		this.monitoredFeedbacks.forEach(async (feedback) => {
-			this.pollMonitoredFeedback(feedback)
+	async pollAllMonitoredFeedbacks() {
+		for (const feedback of this.monitoredFeedbacks) {
+			await this.pollMonitoredFeedback(feedback)
 			await this.sleep(TIME_BETW_MULTIPLE_REQ_MS)
-		});
+		}
 	}
 
 	async pollMonitoredFeedback(feedback) {
@@ -152,7 +152,7 @@ class AHMInstance extends InstanceBase {
 	}
 
 	async performReadoutAfterConnected() {
-		this.pollAllMonitoredFeedbacks()
+		await this.pollAllMonitoredFeedbacks()
 
 		// get input info
 		let unitInAmount = this.numberOfInputs
@@ -304,6 +304,7 @@ class AHMInstance extends InstanceBase {
 
 			this.midiSocket.on('error', (err) => {
 				this.log('error', 'MIDI error: ' + err.message)
+				this.pollAllMonitoredFeedbacks()
 			})
 
 			this.midiSocket.on('data', (data) => {
