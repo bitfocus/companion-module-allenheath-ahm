@@ -265,22 +265,10 @@ export function getActions() {
 				]),
 			]
 			this.sendCommand(buffers)
-			
-			// check if the array inputsToZonesMute does not yet have a SubArray for this input
-			if (Array.isArray(this.inputsToZonesMute[inputNumber + 1]) == false) {
-				// if there is no array, create the entry
-				this.inputsToZonesMute[inputNumber + 1] = new Array(this.numberOfZones + 1).fill(0)
-				//console.log(`action input_to_zone: Created Array with amount=${this.numberOfZones + 1} for inputNumber=${inputNumber + 1} in this.inputsToZonesMute.`)
-			}
-			// check if SubArray has incorrect format => If yes write nothing to variable and report error via log
-			if (typeof this.inputsToZonesMute[inputNumber + 1][zoneNumber + 1] === 'undefined') {
-				console.log(`Error: action input_to_zone: Cannot access Mute Input ${inputNumber + 1} to Zone ${zoneNumber + 1} State.`)
-			}
-			else {
-				// happy path: update mute state
-				this.inputsToZonesMute[inputNumber + 1][zoneNumber + 1] = action.options.mute ? 1 : 0
-			}
 
+			// manually update internal state, (internal state works with user-number, hence + 1)
+			updateSendMuteState(Constants.SendType.InputToZone, inputNumber + 1, zoneNumber + 1, action.options.mute ? 1 : 0)
+			
 			this.checkFeedbacks('inputToZoneMute')
 		},
 	}
