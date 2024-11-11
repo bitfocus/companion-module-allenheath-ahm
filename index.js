@@ -304,7 +304,6 @@ class AHMInstance extends InstanceBase {
 
 			this.midiSocket.on('error', (err) => {
 				this.log('error', 'MIDI error: ' + err.message)
-				this.pollAllMonitoredFeedbacks()
 			})
 
 			this.midiSocket.on('data', (data) => {

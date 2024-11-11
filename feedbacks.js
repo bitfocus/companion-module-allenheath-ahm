@@ -97,7 +97,18 @@ export function getFeedbacks() {
 		},
 		subscribe: (feedback) => {
 			this.monitoredFeedbacks.push(this.buildFeedbackMonitoringObject(feedback))
-		}	
+			console.log("added")
+			console.log(feedback)
+		},
+		unsubscribe: (feedback) => {
+			// find index of feedback with this ID in the array
+			const feedbackIndex = this.monitoredFeedbacks.indexOf((monFeedback) => monFeedback.id == feedback.id);
+			if (feedbackIndex > -1) { // only splice array when feedback was found
+				this.monitoredFeedbacks.splice(feedbackIndex, 1); // 2nd parameter means remove one item only
+				console.log("removed")
+				console.log(feedback)
+			}
+		}
 	}
 
 	return feedbacks
