@@ -74,7 +74,7 @@ export function getFeedbacks() {
 			return this.inputsToZonesMute[parseInt(feedback.options.input)]?.[parseInt(feedback.options.zone)] == 1
 		},
 		subscribe: (feedback) => {
-			console.log(`Feedback inputToZoneMute has new subscriber : ${feedback}`)
+			console.log('Feedback inputToZoneMute has new subscriber :', feedback)
 		}	
 	}
 
