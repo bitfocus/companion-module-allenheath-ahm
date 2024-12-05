@@ -43,7 +43,7 @@ export function getActions() {
 		return [
 			{
 				type: 'dropdown',
-				id: 'number',
+				id: 'setlvl_ch_number',
 				label: name,
 				default: 0,
 				choices: Helpers.getChoicesArrayWithIncrementingNumbers(name, qty, offset),
@@ -63,7 +63,7 @@ export function getActions() {
 		return [
 			{
 				type: 'dropdown',
-				id: 'number',
+				id: 'incdec_ch_number',
 				label: name,
 				default: 0,
 				choices: Helpers.getChoicesArrayWithIncrementingNumbers(name, qty, offset),
@@ -98,13 +98,13 @@ export function getActions() {
 	// action: action of callback
 	// type: 0 for input, 1 for zone
 	this.setLevelCallback = async (action, type) => {
-		if (type != Constants.ChannelType.Input && type != Constants.ChannelType.Zone) {
+		if(Helpers.checkIfValueOfEnum(chType, Constants.ChannelType) == false) {
 			return
 		}
 
 		let typeCodeSetLevel = parseInt(0xb0 + type) // type code for Command "Channel Level"
 		let typeCodeGetLevel = parseInt(0x00 + type) // type code for Command "Get Channel Level"
-		let chNumber = parseInt(action.options.number)
+		let chNumber = parseInt(action.options.setlvl_ch_number)
 		let levelDec = parseInt(action.options.level)
 
 		let buffers = [
@@ -121,13 +121,13 @@ export function getActions() {
 	}
 
 	this.incDecLevelCallback = async (action, type) => {
-		if (type != Constants.ChannelType.Input && type != Constants.ChannelType.Zone) {
+		if(Helpers.checkIfValueOfEnum(chType, Constants.ChannelType) == false) {
 			return
 		}
 
 		let typeCodeSetLevel = parseInt(0xb0 + type) // type code for Command "Level Increment / Decrement"
 		let typeCodeGetLevel = parseInt(0x00 + type) // type code for Command "Get Channel Level"
-		let chNumber = parseInt(action.options.number)
+		let chNumber = parseInt(action.options.incdec_ch_number)
 		let incdecSelector = action.options.incdec == 'inc' ? 0x7f : 0x3f
 
 		let buffers = [
@@ -150,6 +150,24 @@ export function getActions() {
 		buffers = [
 			Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12, 0x01, 0x00, typeCodeGetLevel, 0x01, 0x0b, 0x17, chNumber, 0xf7]),
 		]
+		this.sendCommand(buffers)
+	}
+
+	this.incDecSendLevelCallback = async (action, type) => {
+		if (Helpers.checkIfValueOfEnum(type, Constants.SendType) == false) {
+			return
+		}
+
+		let chType = Helpers.getChTypeOfSendType(type)
+		let sendChType = Helpers.getSendChTypeOfSendType(type)
+		let chNumber = parseInt(action.options.incdec_ch_number)
+		let sendChNumber = parseInt(action.options.number)
+		let incdecSelector = action.options.incdec == 'inc' ? 0x7f : 0x3f
+
+		let buffers = [
+			Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12, 0x01, 0x00, chType, 0x04, chNumber, sendChType, sendChNumber, incdecSelector, 0xf7]),
+		]
+
 		this.sendCommand(buffers)
 	}
 
@@ -247,22 +265,10 @@ export function getActions() {
 				]),
 			]
 			this.sendCommand(buffers)
-			
-			// check if the array inputsToZonesMute already has an entry for the input
-			if (this.inputsToZonesMute[inputNumber + 1] == null) {
-				// if it is undefined, create the entry
-				this.inputsToZonesMute[inputNumber + 1] = new Array(this.numberOfZones + 1).fill(0)
-				// console.log(`action input_to_zone: Created Array for inputNumber=${inputNumber + 1} in this.inputsToZonesMute.`)
-			}
-			// if the input Array existed, it is still possible that the Array cannot be accessed => Write nothing to variable and report error via log
-			if (this.inputsToZonesMute[inputNumber + 1][zoneNumber + 1] == null) {
-				console.log(`Error: action input_to_zone: Cannot access Mute Input ${inputNumber + 1} to Zone ${zoneNumber + 1} State.`)
-			}
-			else {
-				// happy path: update mute state
-				this.inputsToZonesMute[inputNumber + 1][zoneNumber + 1] = action.options.mute ? 1 : 0
-			}
 
+			// manually update internal state, (internal state works with user-number, hence + 1)
+			this.updateSendMuteState(Constants.SendType.InputToZone, inputNumber + 1, zoneNumber + 1, action.options.mute ? 1 : 0)
+			
 			this.checkFeedbacks('inputToZoneMute')
 		},
 	}
@@ -293,9 +299,29 @@ export function getActions() {
 
 	actions['inc_dec_level_zone'] = {
 		name: 'Increment/Decrement Level of Zone',
-		options: this.incDecOptions('Input', this.numberOfZones, -1),
+		options: this.incDecOptions('Zone', this.numberOfZones, -1),
 		callback: async (action) => {
 			this.incDecLevelCallback(action, Constants.ChannelType.Zone)
+		},
+	}
+
+	actions['inc_dec_in_zn_send_level'] = {
+		name: 'Increment/Decrement Input to Zone Send Level',
+		options: this.incDecOptions('Input', this.numberOfInputs, -1).concat(
+			this.listOptions('Zone', this.numberOfZones, -1),
+		),
+		callback: async (action) => {
+			this.incDecSendLevelCallback(action, Constants.SendType.InputToZone)
+		},
+	}
+
+	actions['inc_dec_zn_zn_send_level'] = {
+		name: 'Increment/Decrement Zone to Zone Send Level',
+		options: this.incDecOptions('Zone', this.numberOfZones, -1).concat(
+			this.listOptions('Zone', this.numberOfZones, -1),
+		),
+		callback: async (action) => {
+			this.incDecSendLevelCallback(action, Constants.SendType.ZoneToZone)
 		},
 	}
 

@@ -8,6 +8,7 @@ import * as Constants from './constants.js'
 import * as Helpers from './helpers.js'
 
 const MIDI_PORT = 51325
+const TIME_BETW_MULTIPLE_REQ_MS = 150
 
 class AHMInstance extends InstanceBase {
 	constructor(internal) {
@@ -23,8 +24,10 @@ class AHMInstance extends InstanceBase {
 		this.numberOfInputs = 64
 		this.numberOfZones = 64
 		this.inputsMute = this.createArray(this.numberOfInputs)
-		this.inputsToZonesMute = {}
+		this.inputsToZonesMute = []
 		this.zonesMute = this.createArray(this.numberOfZones)
+		// list of monitored feedbacks
+		this.monitoredFeedbacks = []
 
 		// then set unit type according to config; reduces traffic if smaller AHM is used
 		this.initUnitType()
@@ -115,6 +118,26 @@ class AHMInstance extends InstanceBase {
 		this.setActionDefinitions(actions)
 	}
 
+	async pollAllMonitoredFeedbacks() {
+		for (const feedback of this.monitoredFeedbacks) {
+			await this.pollMonitoredFeedback(feedback)
+			await this.sleep(TIME_BETW_MULTIPLE_REQ_MS)
+		}
+	}
+
+	async pollMonitoredFeedback(feedback) {
+		switch (feedback.type) {
+			case Constants.MonitoredFeedbackType.MuteState:
+				this.requestSendMuteInfo(feedback.sendType, feedback.channel, feedback.sendChannel)
+				break;
+			case Constants.MonitoredFeedbackType.Undefined:
+				// do nothing
+				break;
+			default:
+				console.log(`pollMonitoredFeedback: type of feedback not implemented`);
+		}
+	}
+
 	sleep(ms) {
 		return new Promise((resolve) => setTimeout(resolve, ms))
 	}
@@ -122,33 +145,35 @@ class AHMInstance extends InstanceBase {
 	async updateLevelVariables() {
 		// get inputs
 		let unitInAmount = this.numberOfInputs
-		for (let index = 0; index < unitInAmount; index++) {
+		for (let index = 1; index <= unitInAmount; index++) {
 			this.requestLevelInfo(index) // inputs = 0
-			await this.sleep(150)
+			await this.sleep(TIME_BETW_MULTIPLE_REQ_MS)
 		}
 	}
 
 	async performReadoutAfterConnected() {
+		await this.pollAllMonitoredFeedbacks()
+
 		// get input info
 		let unitInAmount = this.numberOfInputs
-		for (let index = 0; index < unitInAmount; index++) {
+		for (let index = 1; index <= unitInAmount; index++) {
 			this.requestMuteInfo(Constants.ChannelType.Input, index)
-			await this.sleep(150)
+			await this.sleep(TIME_BETW_MULTIPLE_REQ_MS)
 			this.requestLevelInfo(Constants.ChannelType.Input, index)
-			await this.sleep(150)
+			await this.sleep(TIME_BETW_MULTIPLE_REQ_MS)
 		}
 		// get zone info
 		let unitZonesAmount = this.numberOfZones
-		for (let index = 0; index < unitZonesAmount; index++) {
+		for (let index = 1; index <= unitZonesAmount; index++) {
 			this.requestMuteInfo(Constants.ChannelType.Zone, index)
-			await this.sleep(150)
+			await this.sleep(TIME_BETW_MULTIPLE_REQ_MS)
 			this.requestLevelInfo(Constants.ChannelType.Zone, index)
-			await this.sleep(150)
+			await this.sleep(TIME_BETW_MULTIPLE_REQ_MS)
 		}
 	}
 
 	requestMuteInfo(chType, chNumber) {
-		if (chType != Constants.ChannelType.Input && chType != Constants.ChannelType.Zone) {
+		if(Helpers.checkIfValueOfEnum(chType, Constants.ChannelType) == false) {
 			return
 		}
 
@@ -165,7 +190,41 @@ class AHMInstance extends InstanceBase {
 				parseInt(chType),
 				0x01,
 				0x09,
-				parseInt(chNumber),
+				parseInt(chNumber)-1,
+				0xf7,
+			]),
+		]
+		this.sendCommand(buffer)
+	}
+
+	requestSendMuteInfo(sendType, chNumber, sendChNumber) {
+		if(Helpers.checkIfValueOfEnum(sendType, Constants.SendType) == false) {
+			return
+		}
+
+		// get types of send
+		let chType = Helpers.getChTypeOfSendType(sendType)
+		let sendChType = Helpers.getSendChTypeOfSendType(sendType)
+
+		console.log(`requestSendMuteInfo: chType: ${chType}, ch: ${chNumber}, sendChType: ${sendChType}, sendChNumber: ${sendChNumber}`)
+
+		let buffer = [
+			Buffer.from([
+				0xf0,
+				0x00,
+				0x00,
+				0x1a,
+				0x50,
+				0x12,
+				0x01,
+				0x00,
+				parseInt(chType),
+				0x01,
+				0x0F,
+				0x03,
+				parseInt(chNumber)-1,
+				parseInt(sendChType),
+				parseInt(sendChNumber)-1,
 				0xf7,
 			]),
 		]
@@ -173,12 +232,12 @@ class AHMInstance extends InstanceBase {
 	}
 
 	requestLevelInfo(chType, chNumber) {
-		if (chType != Constants.ChannelType.Input && chType != Constants.ChannelType.Zone) {
+		if(Helpers.checkIfValueOfEnum(chType, Constants.ChannelType) == false) {
 			return
 		}
 
 		let buffer = [
-			Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12, 0x01, 0x00, parseInt(chType), 0x01, 0x0b, 0x17, chNumber, 0xf7]),
+			Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12, 0x01, 0x00, parseInt(chType), 0x01, 0x0b, 0x17, parseInt(chNumber)-1, 0xf7]),
 		]
 		this.sendCommand(buffer)
 	}
@@ -244,7 +303,8 @@ class AHMInstance extends InstanceBase {
 			})
 
 			this.midiSocket.on('error', (err) => {
-				this.log('error', 'MIDI error: ' + err.message)
+				this.log('error', 'Error: ' + err.message)
+				this.updateStatus(InstanceStatus.ConnectionFailure)
 			})
 
 			this.midiSocket.on('data', (data) => {
@@ -295,15 +355,12 @@ class AHMInstance extends InstanceBase {
 						data[13] == 63 ? 'unmute' : 'mute'
 					}`
 				)*/
+
 				let inputNum = this.hexToDec(data[10]) + 1
 				let zoneNum = this.hexToDec(data[12]) + 1
+				let muteState = data[13] == 63 ? 0 : 1
 
-				if (this.inputsToZonesMute[inputNum]?.[zoneNum]) {
-					this.inputsToZonesMute[inputNum][zoneNum] = data[13] == 63 ? 0 : 1
-				} else {
-					this.inputsToZonesMute[inputNum] = {}
-					this.inputsToZonesMute[inputNum][zoneNum] = data[13] == 63 ? 0 : 1
-				}
+				this.updateSendMuteState(Constants.SendType.InputToZone, inputNum, zoneNum, muteState)
 				this.checkFeedbacks('inputToZoneMute')
 				break
 			case 176:
@@ -337,6 +394,40 @@ class AHMInstance extends InstanceBase {
 			default:
 				//console.log('Extra data coming in')
 				break
+		}
+	}
+
+	/**
+	 * Updates the internally stored Mute State of a Send.
+	 * @param channelNumber Number of Channel (Source of Send), User-Number, not zero-based identifier.
+	 * @param sendChannelNumber Number of Send Channel (Destination of Send), User-Number, not zero-based identifier.
+	 * @param muteState 0 = unmuted, 1 = muted
+	 */
+	updateSendMuteState(sendType, channelNumber, sendChannelNumber, muteState){
+		if(Helpers.checkIfValueOfEnum(sendType, Constants.SendType) == false) {
+			return
+		}
+
+		switch (sendType) {
+			case Constants.SendType.InputToZone:
+				// check if the array inputsToZonesMute does not yet have a SubArray for this input
+				if (Array.isArray(this.inputsToZonesMute[channelNumber]) == false) {
+					// if there is no array, create the entry
+					this.inputsToZonesMute[channelNumber] = new Array(this.numberOfZones + 1).fill(0)
+					console.log(`updateSendMuteState: Created Array with amount=${this.numberOfZones + 1} for inputNumber=${channelNumber} in this.inputsToZonesMute`)
+				}
+				// check if SubArray has incorrect format => If yes write nothing to variable and report error via log
+				if (typeof this.inputsToZonesMute[channelNumber][sendChannelNumber] === 'undefined') {
+					console.log(`updateSendMuteState: Cannot access Mute Input ${channelNumber} to Zone ${sendChannelNumber} State.`)
+				}
+				else {
+					// happy path: update mute state
+					this.inputsToZonesMute[channelNumber][sendChannelNumber] = muteState
+				}
+
+				break;
+			default:
+				console.log(`updateSendMuteState: Storing Mute States is not implemented for Send Type ${sendType}`);
 		}
 	}
 }

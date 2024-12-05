@@ -44,4 +44,39 @@ export default [
 
 		return changes
 	},
+	function v2_2_0(context, props) {
+		let changes = {
+			updatedConfig: null,
+			updatedActions: [],
+			updatedFeedbacks: [],
+		}
+
+		// update actions
+		for (const action of props.actions) {
+			// replace option with old name 'number' with new option name 'incdec_ch_number'
+			if (action.actionId === 'inc_dec_level_input' || action.actionId === 'inc_dec_level_zone') {
+				// check if the action has the option 'number' (by checking if property exists)
+				if (Object.hasOwn(action.options, 'number')) {
+
+					action.options.number = action.options.incdec_ch_number
+					delete action.options.number
+
+					changes.updatedActions.push(action)
+				}
+			}
+			// replace option with old name 'number' with new option name 'setlvl_ch_number'
+			if (action.actionId === 'set_level_input' || action.actionId === 'set_level_zone') {
+				// check if the action has the option 'number' (by checking if property exists)
+				if (Object.hasOwn(action.options, 'number')) {
+
+					action.options.number = action.options.setlvl_ch_number
+					delete action.options.number
+
+					changes.updatedActions.push(action)
+				}
+			}
+		}
+
+		return changes
+	},
 ]
