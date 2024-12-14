@@ -78,10 +78,9 @@ export function getVarNameZoneLevel(zoneNum) {
  * @param enumType enum to check wether value is value of
  */
 export function checkIfValueOfEnum(value, enumType) {
-	if(Object.values(enumType).includes(value)){
+	if (Object.values(enumType).includes(value)) {
 		return true
-	}
-	else{
+	} else {
 		console.error(`checkIfValueOfEnum: value '${value}' was found not to be of enum type '${enumType}'`)
 		return false
 	}
@@ -102,5 +101,5 @@ export function getChTypeOfSendType(sendType) {
  * @param sendType Object of send type
  */
 export function getSendChTypeOfSendType(sendType) {
-	return parseInt(0x00 + (sendType & 0x0F)) // bitwise and with low nibble to only get its value (send type)
+	return parseInt(0x00 + (sendType & 0x0f)) // bitwise and with low nibble to only get its value (send type)
 }

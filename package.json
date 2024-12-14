@@ -13,11 +13,11 @@
 		"url": "git+https://github.com/bitfocus/companion-module-allenheath-ahm.git"
 	},
 	"dependencies": {
-		"@companion-module/base": "~1.11.0"
+		"@companion-module/base": "~1.11.2"
 	},
 	"devDependencies": {
 		"@companion-module/tools": "^2.0.4",
-		"prettier": "^3.3.3"
+		"prettier": "^3.4.2"
 	},
 	"prettier": "@companion-module/tools/.prettierrc.json"
 }
