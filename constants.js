@@ -136,6 +136,18 @@ export const ChannelType = {
 	Zone: 1,
 }
 
+// Send Type, high nibble stands for channel type, low nibble stands for send channel type
+export const SendType = {
+	InputToZone: 0x01, // 0b 00000001
+	ZoneToZone: 0x11,  // 0b 00010001
+}
+
+// Types of feedbacks to monitor (e.g. poll or update on connect)
+export const MonitoredFeedbackType = {
+	Undefined: 0,
+	MuteState: 1,
+}
+
 // Playback Channel for "Audio Playback" Command
 export const PlaybackChannel = {
 	Mono1: 0,
