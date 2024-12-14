@@ -98,7 +98,7 @@ export function getActions() {
 	// action: action of callback
 	// type: 0 for input, 1 for zone
 	this.setLevelCallback = async (action, type) => {
-		if(Helpers.checkIfValueOfEnum(chType, Constants.ChannelType) == false) {
+		if (Helpers.checkIfValueOfEnum(chType, Constants.ChannelType) == false) {
 			return
 		}
 
@@ -121,7 +121,7 @@ export function getActions() {
 	}
 
 	this.incDecLevelCallback = async (action, type) => {
-		if(Helpers.checkIfValueOfEnum(chType, Constants.ChannelType) == false) {
+		if (Helpers.checkIfValueOfEnum(chType, Constants.ChannelType) == false) {
 			return
 		}
 
@@ -165,7 +165,23 @@ export function getActions() {
 		let incdecSelector = action.options.incdec == 'inc' ? 0x7f : 0x3f
 
 		let buffers = [
-			Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12, 0x01, 0x00, chType, 0x04, chNumber, sendChType, sendChNumber, incdecSelector, 0xf7]),
+			Buffer.from([
+				0xf0,
+				0x00,
+				0x00,
+				0x1a,
+				0x50,
+				0x12,
+				0x01,
+				0x00,
+				chType,
+				0x04,
+				chNumber,
+				sendChType,
+				sendChNumber,
+				incdecSelector,
+				0xf7,
+			]),
 		]
 
 		this.sendCommand(buffers)
@@ -267,8 +283,13 @@ export function getActions() {
 			this.sendCommand(buffers)
 
 			// manually update internal state, (internal state works with user-number, hence + 1)
-			this.updateSendMuteState(Constants.SendType.InputToZone, inputNumber + 1, zoneNumber + 1, action.options.mute ? 1 : 0)
-			
+			this.updateSendMuteState(
+				Constants.SendType.InputToZone,
+				inputNumber + 1,
+				zoneNumber + 1,
+				action.options.mute ? 1 : 0,
+			)
+
 			this.checkFeedbacks('inputToZoneMute')
 		},
 	}

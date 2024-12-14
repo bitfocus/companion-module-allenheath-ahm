@@ -57,7 +57,6 @@ export default [
 			if (action.actionId === 'inc_dec_level_input' || action.actionId === 'inc_dec_level_zone') {
 				// check if the action has the option 'number' (by checking if property exists)
 				if (Object.hasOwn(action.options, 'number')) {
-
 					action.options.number = action.options.incdec_ch_number
 					delete action.options.number
 
@@ -68,7 +67,6 @@ export default [
 			if (action.actionId === 'set_level_input' || action.actionId === 'set_level_zone') {
 				// check if the action has the option 'number' (by checking if property exists)
 				if (Object.hasOwn(action.options, 'number')) {
-
 					action.options.number = action.options.setlvl_ch_number
 					delete action.options.number
 

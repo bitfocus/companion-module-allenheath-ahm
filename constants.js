@@ -139,7 +139,7 @@ export const ChannelType = {
 // Send Type, high nibble stands for channel type, low nibble stands for send channel type
 export const SendType = {
 	InputToZone: 0x01, // 0b 00000001
-	ZoneToZone: 0x11,  // 0b 00010001
+	ZoneToZone: 0x11, // 0b 00010001
 }
 
 // Types of feedbacks to monitor (e.g. poll or update on connect)

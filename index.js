@@ -129,12 +129,12 @@ class AHMInstance extends InstanceBase {
 		switch (feedback.type) {
 			case Constants.MonitoredFeedbackType.MuteState:
 				this.requestSendMuteInfo(feedback.sendType, feedback.channel, feedback.sendChannel)
-				break;
+				break
 			case Constants.MonitoredFeedbackType.Undefined:
 				// do nothing
-				break;
+				break
 			default:
-				console.log(`pollMonitoredFeedback: type of feedback not implemented`);
+				console.log(`pollMonitoredFeedback: type of feedback not implemented`)
 		}
 	}
 
@@ -173,7 +173,7 @@ class AHMInstance extends InstanceBase {
 	}
 
 	requestMuteInfo(chType, chNumber) {
-		if(Helpers.checkIfValueOfEnum(chType, Constants.ChannelType) == false) {
+		if (Helpers.checkIfValueOfEnum(chType, Constants.ChannelType) == false) {
 			return
 		}
 
@@ -190,7 +190,7 @@ class AHMInstance extends InstanceBase {
 				parseInt(chType),
 				0x01,
 				0x09,
-				parseInt(chNumber)-1,
+				parseInt(chNumber) - 1,
 				0xf7,
 			]),
 		]
@@ -198,7 +198,7 @@ class AHMInstance extends InstanceBase {
 	}
 
 	requestSendMuteInfo(sendType, chNumber, sendChNumber) {
-		if(Helpers.checkIfValueOfEnum(sendType, Constants.SendType) == false) {
+		if (Helpers.checkIfValueOfEnum(sendType, Constants.SendType) == false) {
 			return
 		}
 
@@ -206,7 +206,9 @@ class AHMInstance extends InstanceBase {
 		let chType = Helpers.getChTypeOfSendType(sendType)
 		let sendChType = Helpers.getSendChTypeOfSendType(sendType)
 
-		console.log(`requestSendMuteInfo: chType: ${chType}, ch: ${chNumber}, sendChType: ${sendChType}, sendChNumber: ${sendChNumber}`)
+		console.log(
+			`requestSendMuteInfo: chType: ${chType}, ch: ${chNumber}, sendChType: ${sendChType}, sendChNumber: ${sendChNumber}`,
+		)
 
 		let buffer = [
 			Buffer.from([
@@ -220,11 +222,11 @@ class AHMInstance extends InstanceBase {
 				0x00,
 				parseInt(chType),
 				0x01,
-				0x0F,
+				0x0f,
 				0x03,
-				parseInt(chNumber)-1,
+				parseInt(chNumber) - 1,
 				parseInt(sendChType),
-				parseInt(sendChNumber)-1,
+				parseInt(sendChNumber) - 1,
 				0xf7,
 			]),
 		]
@@ -232,12 +234,27 @@ class AHMInstance extends InstanceBase {
 	}
 
 	requestLevelInfo(chType, chNumber) {
-		if(Helpers.checkIfValueOfEnum(chType, Constants.ChannelType) == false) {
+		if (Helpers.checkIfValueOfEnum(chType, Constants.ChannelType) == false) {
 			return
 		}
 
 		let buffer = [
-			Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12, 0x01, 0x00, parseInt(chType), 0x01, 0x0b, 0x17, parseInt(chNumber)-1, 0xf7]),
+			Buffer.from([
+				0xf0,
+				0x00,
+				0x00,
+				0x1a,
+				0x50,
+				0x12,
+				0x01,
+				0x00,
+				parseInt(chType),
+				0x01,
+				0x0b,
+				0x17,
+				parseInt(chNumber) - 1,
+				0xf7,
+			]),
 		]
 		this.sendCommand(buffer)
 	}
@@ -403,8 +420,8 @@ class AHMInstance extends InstanceBase {
 	 * @param sendChannelNumber Number of Send Channel (Destination of Send), User-Number, not zero-based identifier.
 	 * @param muteState 0 = unmuted, 1 = muted
 	 */
-	updateSendMuteState(sendType, channelNumber, sendChannelNumber, muteState){
-		if(Helpers.checkIfValueOfEnum(sendType, Constants.SendType) == false) {
+	updateSendMuteState(sendType, channelNumber, sendChannelNumber, muteState) {
+		if (Helpers.checkIfValueOfEnum(sendType, Constants.SendType) == false) {
 			return
 		}
 
@@ -414,20 +431,23 @@ class AHMInstance extends InstanceBase {
 				if (Array.isArray(this.inputsToZonesMute[channelNumber]) == false) {
 					// if there is no array, create the entry
 					this.inputsToZonesMute[channelNumber] = new Array(this.numberOfZones + 1).fill(0)
-					console.log(`updateSendMuteState: Created Array with amount=${this.numberOfZones + 1} for inputNumber=${channelNumber} in this.inputsToZonesMute`)
+					console.log(
+						`updateSendMuteState: Created Array with amount=${this.numberOfZones + 1} for inputNumber=${channelNumber} in this.inputsToZonesMute`,
+					)
 				}
 				// check if SubArray has incorrect format => If yes write nothing to variable and report error via log
 				if (typeof this.inputsToZonesMute[channelNumber][sendChannelNumber] === 'undefined') {
-					console.log(`updateSendMuteState: Cannot access Mute Input ${channelNumber} to Zone ${sendChannelNumber} State.`)
-				}
-				else {
+					console.log(
+						`updateSendMuteState: Cannot access Mute Input ${channelNumber} to Zone ${sendChannelNumber} State.`,
+					)
+				} else {
 					// happy path: update mute state
 					this.inputsToZonesMute[channelNumber][sendChannelNumber] = muteState
 				}
 
-				break;
+				break
 			default:
-				console.log(`updateSendMuteState: Storing Mute States is not implemented for Send Type ${sendType}`);
+				console.log(`updateSendMuteState: Storing Mute States is not implemented for Send Type ${sendType}`)
 		}
 	}
 }

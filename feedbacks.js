@@ -17,16 +17,15 @@ export function getFeedbacks() {
 				extractedFeedbackInfo.type = Constants.MonitoredFeedbackType.MuteState
 				extractedFeedbackInfo.sendType = Constants.SendType.InputToZone
 				extractedFeedbackInfo.channel = feedback.options.input
-				extractedFeedbackInfo.sendChannel = feedback.options.zone			  
-				break;
-	
+				extractedFeedbackInfo.sendChannel = feedback.options.zone
+				break
+
 			default:
 				extractedFeedbackInfo.type = Constants.MonitoredFeedbackType.Undefined
 		}
 
 		return extractedFeedbackInfo
 	}
-
 
 	feedbacks['inputMute'] = {
 		type: 'boolean',
@@ -102,11 +101,12 @@ export function getFeedbacks() {
 		unsubscribe: (feedback) => {
 			// remove this feedback from the monitored feedbacks
 			// find index of feedback with this ID in the array
-			const feedbackIndex = this.monitoredFeedbacks.findIndex((monFeedback) => monFeedback.id == feedback.id);
-			if (feedbackIndex > -1) { // only splice array when feedback was found
-				this.monitoredFeedbacks.splice(feedbackIndex, 1); // 2nd parameter means remove one item only
+			const feedbackIndex = this.monitoredFeedbacks.findIndex((monFeedback) => monFeedback.id == feedback.id)
+			if (feedbackIndex > -1) {
+				// only splice array when feedback was found
+				this.monitoredFeedbacks.splice(feedbackIndex, 1) // 2nd parameter means remove one item only
 			}
-		}
+		},
 	}
 
 	return feedbacks
