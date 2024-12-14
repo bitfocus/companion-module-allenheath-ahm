@@ -66,7 +66,7 @@ class AHMInstance extends InstanceBase {
 
 	async configUpdated(config) {
 		this.config = config
-		this.initUnitChannelSize()
+		this.initUnitType()
 		this.initActions()
 		this.initVariables()
 		this.initTCP()
