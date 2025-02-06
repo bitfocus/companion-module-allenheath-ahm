@@ -98,7 +98,7 @@ export function getActions() {
 	// action: action of callback
 	// type: 0 for input, 1 for zone
 	this.setLevelCallback = async (action, type) => {
-		if (Helpers.checkIfValueOfEnum(chType, Constants.ChannelType) == false) {
+		if (Helpers.checkIfValueOfEnum(type, Constants.ChannelType) == false) {
 			return
 		}
 
@@ -121,7 +121,7 @@ export function getActions() {
 	}
 
 	this.incDecLevelCallback = async (action, type) => {
-		if (Helpers.checkIfValueOfEnum(chType, Constants.ChannelType) == false) {
+		if (Helpers.checkIfValueOfEnum(type, Constants.ChannelType) == false) {
 			return
 		}
 
