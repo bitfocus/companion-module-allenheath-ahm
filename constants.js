@@ -134,6 +134,7 @@ export const dbu_Values = [
 export const ChannelType = {
 	Input: 0,
 	Zone: 1,
+	ControlGroup: 2,
 }
 
 // Send Type, high nibble stands for channel type, low nibble stands for send channel type

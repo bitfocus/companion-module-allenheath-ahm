@@ -23,9 +23,11 @@ class AHMInstance extends InstanceBase {
 		// default to 64 in/outs (AHM-64), create all arrays with maximum 64 channels
 		this.numberOfInputs = 64
 		this.numberOfZones = 64
+		this.numberOfControlGroups = 32
 		this.inputsMute = this.createArray(this.numberOfInputs)
 		this.inputsToZonesMute = []
 		this.zonesMute = this.createArray(this.numberOfZones)
+		this.controlgroupsMute = this.createArray(this.numberOfControlGroups)
 		// list of monitored feedbacks
 		this.monitoredFeedbacks = []
 
@@ -359,6 +361,11 @@ class AHMInstance extends InstanceBase {
 				this.zonesMute[this.hexToDec(data[1])] = data[2] == 63 ? 0 : 1
 				this.checkFeedbacks('zoneMute')
 				break
+			case 146:
+				// control group mute
+				this.controlgroupsMute[this.hexToDec(data[1])] = data[2] == 63 ? 0 : 1
+				this.checkFeedbacks('cgMute')
+				break
 			case 240:
 				// input to zone mute
 				/* console.log(
@@ -406,6 +413,20 @@ class AHMInstance extends InstanceBase {
 				)
 
 				this.setVariableValues({ [variableNameZone]: this.getDbuValue(levelZone) })
+
+				break
+			case 178:
+				// level change on control group
+				let cgLvlChangeNum = this.hexToDec(data[2]) + 1
+				let levelCG = this.hexToDec(data[6])
+				let variableNameCG = Helpers.getVarNameCGLevel(cgLvlChangeNum)
+
+				this.log(
+					'debug',
+					`Zone ${cgLvlChangeNum} has new level: ${levelCG} (dec) = ${this.getDbuValue(levelCG)} (dBu), changing variable ${variableNameCG}`,
+				)
+
+				this.setVariableValues({ [variableNameCG]: this.getDbuValue(levelCG) })
 
 				break
 			default:
