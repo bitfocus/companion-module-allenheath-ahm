@@ -423,7 +423,7 @@ class AHMInstance extends InstanceBase {
 
 				this.log(
 					'debug',
-					`Zone ${cgLvlChangeNum} has new level: ${levelCG} (dec) = ${this.getDbuValue(levelCG)} (dBu), changing variable ${variableNameCG}`,
+					`Control Group ${cgLvlChangeNum} has new level: ${levelCG} (dec) = ${this.getDbuValue(levelCG)} (dBu), changing variable ${variableNameCG}`,
 				)
 
 				this.setVariableValues({ [variableNameCG]: this.getDbuValue(levelCG) })
