@@ -172,6 +172,13 @@ class AHMInstance extends InstanceBase {
 			this.requestLevelInfo(Constants.ChannelType.Zone, index)
 			await this.sleep(TIME_BETW_MULTIPLE_REQ_MS)
 		}
+		// get control group info
+		for (let index = 1; index <= this.numberOfControlGroups; index++) {
+			this.requestMuteInfo(Constants.ChannelType.ControlGroup, index)
+			await this.sleep(TIME_BETW_MULTIPLE_REQ_MS)
+			this.requestLevelInfo(Constants.ChannelType.ControlGroup, index)
+			await this.sleep(TIME_BETW_MULTIPLE_REQ_MS)
+		}
 	}
 
 	requestMuteInfo(chType, chNumber) {
