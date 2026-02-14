@@ -363,6 +363,7 @@ class AHMInstance extends InstanceBase {
 				break
 			case 146:
 				// control group mute
+				this.log('debug', `Control Group ${this.hexToDec(data[1]) + 1} ${data[2] == 63 ? 'unmute' : 'mute'}`)
 				this.controlgroupsMute[this.hexToDec(data[1])] = data[2] == 63 ? 0 : 1
 				this.checkFeedbacks('cgMute')
 				break
