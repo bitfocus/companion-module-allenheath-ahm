@@ -86,7 +86,7 @@ export function getFeedbacks() {
 			},
 		],
 		callback: (feedback, bank) => {
-			return this.zonesMute[parseInt(feedback.options.cg) - 1] == 1
+			return this.controlgroupsMute[parseInt(feedback.options.cg) - 1] == 1
 		},
 	}
 
