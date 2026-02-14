@@ -115,6 +115,60 @@ export function getPresets() {
 		})
 	}
 
+	// Mute Control Groups
+	for (let index = 0; index < this.numberOfControlGroups; index++) {
+		presets.push({
+			type: 'button',
+			category: 'Mute Control Groups',
+			name: `Mute CG ${parseInt(index) + 1}`,
+			options: {},
+			style: {
+				text: `Mute Control Group ${parseInt(index) + 1}`,
+				size: '14',
+				color: ColorWhite,
+				bgcolor: ColorBlack,
+			},
+			steps: [
+				{
+					down: [
+						{
+							actionId: 'mute_controlgroup',
+							options: {
+								mute_number: index,
+								mute: true,
+							},
+						},
+					],
+					up: [],
+				},
+				{
+					down: [
+						{
+							actionId: 'mute_controlgroup',
+							options: {
+								mute_number: index,
+								mute: false,
+							},
+						},
+					],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'cgMute',
+					options: {
+						cg: parseInt(index) + 1,
+					},
+					style: {
+						color: ColorWhite,
+						bgcolor: ColorRed,
+					},
+				},
+			],
+		})
+	}
+
 	// Mute input to Zone
 	for (let input = 0; input < this.numberOfInputs; input++) {
 		for (let zone = 0; zone < this.numberOfZones; zone++) {

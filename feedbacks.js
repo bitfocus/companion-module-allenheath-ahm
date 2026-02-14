@@ -69,6 +69,27 @@ export function getFeedbacks() {
 		},
 	}
 
+	feedbacks['cgMute'] = {
+		type: 'boolean',
+		name: 'Change background when control group on mute',
+		description: 'When you mute the control group change color',
+		defaultStyle: {
+			color: ColorWhite,
+			bgcolor: ColorRed,
+		},
+		options: [
+			{
+				type: 'textinput',
+				label: 'Select control group',
+				id: 'cg',
+				default: 1,
+			},
+		],
+		callback: (feedback, bank) => {
+			return this.controlgroupsMute[parseInt(feedback.options.cg) - 1] == 1
+		},
+	}
+
 	feedbacks['inputToZoneMute'] = {
 		type: 'boolean',
 		name: 'Change background when input to zone on mute',

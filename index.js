@@ -23,9 +23,11 @@ class AHMInstance extends InstanceBase {
 		// default to 64 in/outs (AHM-64), create all arrays with maximum 64 channels
 		this.numberOfInputs = 64
 		this.numberOfZones = 64
+		this.numberOfControlGroups = 32
 		this.inputsMute = this.createArray(this.numberOfInputs)
 		this.inputsToZonesMute = []
 		this.zonesMute = this.createArray(this.numberOfZones)
+		this.controlgroupsMute = this.createArray(this.numberOfControlGroups)
 		// list of monitored feedbacks
 		this.monitoredFeedbacks = []
 
@@ -168,6 +170,13 @@ class AHMInstance extends InstanceBase {
 			this.requestMuteInfo(Constants.ChannelType.Zone, index)
 			await this.sleep(TIME_BETW_MULTIPLE_REQ_MS)
 			this.requestLevelInfo(Constants.ChannelType.Zone, index)
+			await this.sleep(TIME_BETW_MULTIPLE_REQ_MS)
+		}
+		// get control group info
+		for (let index = 1; index <= this.numberOfControlGroups; index++) {
+			this.requestMuteInfo(Constants.ChannelType.ControlGroup, index)
+			await this.sleep(TIME_BETW_MULTIPLE_REQ_MS)
+			this.requestLevelInfo(Constants.ChannelType.ControlGroup, index)
 			await this.sleep(TIME_BETW_MULTIPLE_REQ_MS)
 		}
 	}
@@ -359,6 +368,12 @@ class AHMInstance extends InstanceBase {
 				this.zonesMute[this.hexToDec(data[1])] = data[2] == 63 ? 0 : 1
 				this.checkFeedbacks('zoneMute')
 				break
+			case 146:
+				// control group mute
+				this.log('debug', `Control Group ${this.hexToDec(data[1]) + 1} ${data[2] == 63 ? 'unmute' : 'mute'}`)
+				this.controlgroupsMute[this.hexToDec(data[1])] = data[2] == 63 ? 0 : 1
+				this.checkFeedbacks('cgMute')
+				break
 			case 240:
 				// input to zone mute
 				/* console.log(
@@ -406,6 +421,20 @@ class AHMInstance extends InstanceBase {
 				)
 
 				this.setVariableValues({ [variableNameZone]: this.getDbuValue(levelZone) })
+
+				break
+			case 178:
+				// level change on control group
+				let cgLvlChangeNum = this.hexToDec(data[2]) + 1
+				let levelCG = this.hexToDec(data[6])
+				let variableNameCG = Helpers.getVarNameCGLevel(cgLvlChangeNum)
+
+				this.log(
+					'debug',
+					`Control Group ${cgLvlChangeNum} has new level: ${levelCG} (dec) = ${this.getDbuValue(levelCG)} (dBu), changing variable ${variableNameCG}`,
+				)
+
+				this.setVariableValues({ [variableNameCG]: this.getDbuValue(levelCG) })
 
 				break
 			default:

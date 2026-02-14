@@ -73,6 +73,14 @@ export function getVarNameZoneLevel(zoneNum) {
 }
 
 /**
+ * Returns the variable name of the variable that displays the control group's current level.
+ * @param cgNum Integer number of the Control Group
+ */
+export function getVarNameCGLevel(cgNum) {
+	return `cg_${cgNum}_lvl`
+}
+
+/**
  * Checks if the value given is a value of the enum enumType. Logs an error if this is not the case.
  * @param value value to check if it is part of enum enumType
  * @param enumType enum to check wether value is value of

@@ -346,6 +346,37 @@ export function getActions() {
 		},
 	}
 
+	// Control Group actions
+	actions['set_level_controlgroup'] = {
+		name: 'Set Level of Control Group',
+		options: this.setLevelOptions('Control Group', this.numberOfControlGroups, -1),
+		callback: async (action) => {
+			this.setLevelCallback(action, Constants.ChannelType.ControlGroup)
+		},
+	}
+
+	actions['inc_dec_level_controlgroup'] = {
+		name: 'Increment/Decrement Level of Control Group',
+		options: this.incDecOptions('Control Group', this.numberOfControlGroups, -1),
+		callback: async (action) => {
+			this.incDecLevelCallback(action, Constants.ChannelType.ControlGroup)
+		},
+	}
+
+	actions['mute_controlgroup'] = {
+		name: 'Mute Control Group',
+		options: this.muteOptions('Control Group', this.numberOfControlGroups, -1),
+		callback: (action) => {
+			let cgNumber = parseInt(action.options.mute_number)
+
+			let buffers = [Buffer.from([0x92, cgNumber, action.options.mute ? 0x7f : 0x3f, 0x92, cgNumber, 0])]
+
+			this.sendCommand(buffers)
+			this.controlgroupsMute[cgNumber] = action.options.mute ? 1 : 0
+			this.checkFeedbacks('cgMute')
+		},
+	}
+
 	// actions['get_phantom'] = {
 	// 	name: 'Get phantom info',
 	// 	options: this.listOptions('Input', 64, -1),
