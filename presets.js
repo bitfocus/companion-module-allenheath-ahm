@@ -123,7 +123,7 @@ export function getPresets() {
 			name: `Mute CG ${parseInt(index) + 1}`,
 			options: {},
 			style: {
-				text: `Mute CG ${parseInt(index) + 1}`,
+				text: `Mute Control Group ${parseInt(index) + 1}`,
 				size: '14',
 				color: ColorWhite,
 				bgcolor: ColorBlack,

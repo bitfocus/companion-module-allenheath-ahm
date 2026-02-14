@@ -32,6 +32,20 @@ export function getVariables() {
 		})
 	}
 
+	// generate control group level variables
+	let unitControlGroupAmount = this.numberOfControlGroups
+	for (let i = 1; i <= unitControlGroupAmount; i++) {
+		let varId = Helpers.getVarNameCGLevel(i)
+		variableDefinitions.push({
+			name: `Control Group ${i} Level`,
+			variableId: varId,
+		})
+		// initialize with ?
+		variableInitValuesArray.push({
+			[varId]: '?',
+		})
+	}
+
 	// flatten init Value Array (convert into single object instead of array)
 	const variableInitValues = variableInitValuesArray.reduce((acc, obj) => {
 		return { ...acc, ...obj }
