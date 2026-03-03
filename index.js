@@ -352,30 +352,11 @@ class AHMInstance extends InstanceBase {
 	processIncomingData(data) {
 		console.log(data)
 
-		switch (data[0]) {
-			case 144:
-				// input mute
-				// data[2] 63 == unmute, 127 == mute
-				//console.log(`Channel ${data[2] == 63 ? 'unmute' : 'mute'}: ${this.hexToDec(data[1]) + 1}`)
-				// this.log('debug', `Channel ${parseInt(data[1], 16) + 1} ${data[2] == 63 ? 'unmute' : 'mute'}`)
-				this.inputsMute[this.hexToDec(data[1])] = data[2] == 63 ? 0 : 1
-				this.checkFeedbacks('inputMute')
-				break
-			case 145:
-				// zone mute
-				//console.log(`Zone ${data[2] == 63 ? 'unmute' : 'mute'}: ${this.hexToDec(data[1]) + 1}`)
-				//this.log('debug', `Zone ${this.hexToDec(data[1]) + 1} ${data[2] == 63 ? 'unmute' : 'mute'}`)
-				this.zonesMute[this.hexToDec(data[1])] = data[2] == 63 ? 0 : 1
-				this.checkFeedbacks('zoneMute')
-				break
-			case 146:
-				// control group mute
-				this.log('debug', `Control Group ${this.hexToDec(data[1]) + 1} ${data[2] == 63 ? 'unmute' : 'mute'}`)
-				this.controlgroupsMute[this.hexToDec(data[1])] = data[2] == 63 ? 0 : 1
-				this.checkFeedbacks('cgMute')
-				break
-			case 240:
-				// input to zone mute
+		if (data[0] === 0xF0) {
+			// receiving SysEx data
+			if (data[9] === 0x03) {
+				// receiving send mute data
+
 				/* console.log(
 					`Input ${this.hexToDec(data[10]) + 1} to zone Zone ${this.hexToDec(data[12]) + 1} ${
 						data[13] == 63 ? 'unmute' : 'mute'
@@ -394,9 +375,16 @@ class AHMInstance extends InstanceBase {
 
 				this.updateSendMuteState(Constants.SendType.InputToZone, inputNum, zoneNum, muteState)
 				this.checkFeedbacks('inputToZoneMute')
-				break
-			case 176:
-				// level change on input
+				return
+			}
+			return
+		}
+
+		if (data[1] === 0x63 && data[3] === 0x62) {
+			// second value of hex:63 and fourth value of hex:62 means level data
+			if (data[0] === 0xB0) {
+				// first value of hex:b0 means channel level data
+
 				let inputLvlChangeNum = this.hexToDec(data[2]) + 1
 				let levelInput = this.hexToDec(data[6])
 				let variableNameInput = Helpers.getVarNameInputLevel(inputLvlChangeNum)
@@ -408,9 +396,11 @@ class AHMInstance extends InstanceBase {
 
 				this.setVariableValues({ [variableNameInput]: this.getDbuValue(levelInput) })
 
-				break
-			case 177:
-				// level change on zone
+				return
+			}
+			if (data[0] === 0xB1) {
+				// first value of hex:b1 means zone level data
+
 				let zoneLvlChangeNum = this.hexToDec(data[2]) + 1
 				let levelZone = this.hexToDec(data[6])
 				let variableNameZone = Helpers.getVarNameZoneLevel(zoneLvlChangeNum)
@@ -422,9 +412,11 @@ class AHMInstance extends InstanceBase {
 
 				this.setVariableValues({ [variableNameZone]: this.getDbuValue(levelZone) })
 
-				break
-			case 178:
-				// level change on control group
+				return
+			}
+			if (data[0] === 0xB2) {
+				// first value of hex:b2 means control group level data
+
 				let cgLvlChangeNum = this.hexToDec(data[2]) + 1
 				let levelCG = this.hexToDec(data[6])
 				let variableNameCG = Helpers.getVarNameCGLevel(cgLvlChangeNum)
@@ -436,10 +428,44 @@ class AHMInstance extends InstanceBase {
 
 				this.setVariableValues({ [variableNameCG]: this.getDbuValue(levelCG) })
 
-				break
-			default:
-				//console.log('Extra data coming in')
-				break
+				return
+			}
+		}
+
+		if (data[0] === 0x90 || data[0] === 0x91 || data[0] === 0x92) {
+			// first value of hex:90, hex:91, or hex:92 means mute of some kind
+			if (data[0] === 0x90) {
+				// first value of hex:90 means channel mute
+
+				// data[2] 63 == unmute, 127 == mute
+				//console.log(`Channel ${data[2] == 63 ? 'unmute' : 'mute'}: ${this.hexToDec(data[1]) + 1}`)
+				// this.log('debug', `Channel ${parseInt(data[1], 16) + 1} ${data[2] == 63 ? 'unmute' : 'mute'}`)
+				this.inputsMute[this.hexToDec(data[1])] = data[2] == 63 ? 0 : 1
+				this.checkFeedbacks('inputMute')
+				return
+			}
+			if (data[0] === 0x91) {
+				// first value of hex:91 means zone mute
+
+				//console.log(`Zone ${data[2] == 63 ? 'unmute' : 'mute'}: ${this.hexToDec(data[1]) + 1}`)
+				//this.log('debug', `Zone ${this.hexToDec(data[1]) + 1} ${data[2] == 63 ? 'unmute' : 'mute'}`)
+				this.zonesMute[this.hexToDec(data[1])] = data[2] == 63 ? 0 : 1
+				this.checkFeedbacks('zoneMute')
+				return
+			}
+			if (data[0] === 0x92) {
+				// first value of hex:92 means channel group mute
+
+				this.log('debug', `Control Group ${this.hexToDec(data[1]) + 1} ${data[2] == 63 ? 'unmute' : 'mute'}`)
+				this.controlgroupsMute[this.hexToDec(data[1])] = data[2] == 63 ? 0 : 1
+				this.checkFeedbacks('cgMute')
+				return
+			}
+		}
+
+		if (data[0] === 0xB0 && data[3] === 0xC0) {
+			// first value of hex:B0 and third value of hex:C0 means preset recall data
+			return
 		}
 	}
 
