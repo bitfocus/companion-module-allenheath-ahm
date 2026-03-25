@@ -46,6 +46,16 @@ export function getVariables() {
 		})
 	}
 
+	// Variable for recalled preset data
+	variableDefinitions.push({
+		name: `Current Preset`,
+		variableId: 'currentPreset',
+	})
+	// initialize with '0'
+	variableInitValuesArray.push({
+		'currentPreset': '0',
+	})
+
 	// flatten init Value Array (convert into single object instead of array)
 	const variableInitValues = variableInitValuesArray.reduce((acc, obj) => {
 		return { ...acc, ...obj }

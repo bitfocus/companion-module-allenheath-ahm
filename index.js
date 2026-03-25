@@ -30,6 +30,8 @@ class AHMInstance extends InstanceBase {
 		this.controlgroupsMute = this.createArray(this.numberOfControlGroups)
 		// list of monitored feedbacks
 		this.monitoredFeedbacks = []
+		// most recently recalled preset
+		this.currentPreset = 0
 
 		// then set unit type according to config; reduces traffic if smaller AHM is used
 		this.initUnitType()
@@ -465,6 +467,14 @@ class AHMInstance extends InstanceBase {
 
 		if (data[0] === 0xB0 && data[3] === 0xC0) {
 			// first value of hex:B0 and third value of hex:C0 means preset recall data
+
+			let presetNum = Number(data[4])
+			let presetNumOffset = Number(data[2])
+
+			this.currentPreset = presetNum + (presetNumOffset * 128) + 1
+			this.log('info', `Preset ${this.currentPreset} recalled`)
+			this.setVariableValues({currentPreset: this.currentPreset})
+			this.checkFeedbacks('currentPreset')
 			return
 		}
 	}

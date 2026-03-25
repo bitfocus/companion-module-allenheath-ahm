@@ -6,6 +6,7 @@ export function getFeedbacks() {
 
 	const ColorWhite = combineRgb(255, 255, 255)
 	const ColorRed = combineRgb(200, 0, 0)
+	const ColorBlue = combineRgb(5, 151, 242)
 
 	// builds an object containing all relevant information to monitor a feedback of some type
 	this.buildFeedbackMonitoringObject = (feedback) => {
@@ -127,6 +128,28 @@ export function getFeedbacks() {
 				// only splice array when feedback was found
 				this.monitoredFeedbacks.splice(feedbackIndex, 1) // 2nd parameter means remove one item only
 			}
+		},
+	}
+
+	feedbacks['currentPreset'] = {
+		type: 'boolean',
+		name: 'Active Preset',
+		description: 'Reacts when a specific preset has been recalled',
+		defaultStyle: {
+			color: ColorWhite,
+			bgcolor: ColorBlue,
+		},
+		options: [
+			{
+				type: 'textinput',
+				label: 'Preset number',
+				id: 'preset',
+				useVariables: true,
+				default: 1,
+			},
+		],
+		callback: (feedback) => {
+			return this.currentPreset == feedback.options.preset 
 		},
 	}
 
