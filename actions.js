@@ -219,14 +219,17 @@ export function getActions() {
 		name: 'Recall Preset',
 		options: this.listOptions('Preset', PRESET_COUNT, -1),
 		callback: (action) => {
-			let presetNumber = parseInt(action.options.number)
-			let buffers = [
+			// note: presetNumber is one less than the actual preset number, since the action list starts at 0
+			let presetNumber = parseInt(action.options.number) 
+			let bank = Math.floor(presetNumber / 128)
+			let presetOffset = presetNumber % 128
+ 			let buffers = [
 				Buffer.from([
 					0xb0,
 					0x00,
-					presetNumber < 128 ? 0x00 : presetNumber < 256 ? 0x01 : presetNumber < 384 ? 0x02 : 0x03,
+					bank,
 					0xc0,
-					presetNumber,
+					presetOffset,
 				]),
 			]
 			this.sendCommand(buffers)
