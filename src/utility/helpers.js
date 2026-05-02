@@ -111,3 +111,12 @@ export function getChTypeOfSendType(sendType) {
 export function getSendChTypeOfSendType(sendType) {
 	return parseInt(0x00 + (sendType & 0x0f)) // bitwise and with low nibble to only get its value (send type)
 }
+
+/**
+ * Get Javascript promise to sleep for a certain duration of time
+ * @param {Number} ms - time in milliseconds
+ * @returns {Promise}
+ */
+export function sleep(ms) {
+	return new Promise((resolve) => setTimeout(resolve, ms))
+}
