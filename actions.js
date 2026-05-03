@@ -11,7 +11,7 @@ import { dbu_Values,
 	ChannelType,
 	SendType
  } from './src/utility/constants.js'
-import { requestLevelInfo, requestMuteInfo } from './src/utility/formatRequest.js'
+import { requestLevelInfo, requestMuteInfo } from './src/utility/formatHexMIDI.js'
 
 const PRESET_COUNT = 500
 const PLAYBACK_COUNT = 127
@@ -192,8 +192,12 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 			sleep(150)
 			
 			buffers = requestMuteInfo(ChannelType.Input, action.options.mute_number)
-			console.log(buffers, action.options.mute_number)
+			console.log('action sending out: ', buffers, action.options.mute_number)
 			tcpClient.sendCommand(buffers)
+
+			sleep(150)
+			console.log('checking feedback inputMute')
+			companion.checkFeedbacks('inputMute')
 			// state.setChannel(ChannelType.Input, inputNumber, undefined, action.options.mute)
 			// companion.checkFeedbacks('inputMute')
 		},
@@ -208,7 +212,7 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 			let buffers = [Buffer.from([0x91, zoneNumber, action.options.mute ? 0x7f : 0x3f, 0x91, zoneNumber, 0])]
 
 			tcpClient.sendCommand(buffers)
-			state.setChannel('zone', zoneNumber, undefined, mute)
+			state.setChannel(ChannelType.Zone, zoneNumber, undefined, mute)
 			companion.checkFeedbacks('zoneMute')
 		},
 	}
@@ -392,7 +396,7 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 			let buffers = [Buffer.from([0x92, cgNumber, action.options.mute ? 0x7f : 0x3f, 0x92, cgNumber, 0])]
 
 			tcpClient.sendCommand(buffers)
-			state.setChannel('cg', cgNumber, undefined, mute)
+			state.setChannel(ChannelType.ControlGroup, cgNumber, undefined, mute)
 			companion.checkFeedbacks('cgMute')
 		},
 	}

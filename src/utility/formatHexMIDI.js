@@ -52,7 +52,7 @@ export function requestMuteInfo(chType, chNumber) {
             parseInt(chType),
             0x01,
             0x09,
-            parseInt(chNumber) - 1,
+            parseInt(chNumber),  //- 1,
             0xf7,
         ]),
     ]

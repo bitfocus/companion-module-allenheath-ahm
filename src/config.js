@@ -21,4 +21,14 @@ export const configFields = [
         ],
         default: 'ahm64',
     },
+    {
+        type: 'number',
+        id: 'pollRate',
+        label: 'Refresh rate (in ms)',
+        width: 6,
+        default: 10000,
+        min: 5000,
+        max: 120000,
+        regex: Regex.NUMBER
+    }
 ]

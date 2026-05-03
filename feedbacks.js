@@ -35,13 +35,13 @@ export function getFeedbacks(state) {
 			{
 				type: 'textinput',
 				label: 'Select input',
-				id: ChannelType.Input,
+				id: 'input',
 				default: 1,
 			},
 		],
 		callback: (feedback, bank) => {
 			let input = parseInt(feedback.options.input)
-			console.log(input, feedback.options.input)
+			console.log('feedback log', input, feedback.options.input)
 			if (!state.hasTrackedChannel(ChannelType.Input, input)) {
 				state.addChannel(ChannelType.Input, input)
 			}
@@ -120,7 +120,7 @@ export function getFeedbacks(state) {
 			{
 				type: 'textinput',
 				label: 'Select input',
-				id: ChannelType.Input,
+				id: 'input',
 				default: 1,
 			},
 			{

@@ -1,4 +1,8 @@
-import { ChannelType } from "../utility/constants.js"
+import { ChannelType,  } from "../utility/constants.js"
+import { getVarNameInputLevel, 
+    getVarNameZoneLevel, 
+    getVarNameCGLevel,
+    getDbuValue } from "../utility/helpers.js"
 
 export function processIncomingData(data, {companion}, state) {
     console.log(data)
@@ -38,17 +42,17 @@ export function processIncomingData(data, {companion}, state) {
 
             let inputLvlChangeNum = parseInt(data[2]) + 1
             let levelInput = parseInt(data[6])
-            let variableNameInput = Helpers.getVarNameInputLevel(inputLvlChangeNum)
+            let variableNameInput = getVarNameInputLevel(inputLvlChangeNum)
 
             companion.log(
                 'debug',
-                `Input ${inputLvlChangeNum} has new level: ${levelInput} (dec) = ${this.getDbuValue(levelInput)} (dBu), changing variable ${variableNameInput}`,
+                `Input ${inputLvlChangeNum} has new level: ${levelInput} (dec) = ${getDbuValue(levelInput)} (dBu), changing variable ${variableNameInput}`,
             )
 
             // Put value in state store if it's being tracked
             state.setChannel(ChannelType.Input, inputLvlChangeNum, levelInput, undefined)
 
-            companion.setVariableValues({ [variableNameInput]: this.getDbuValue(levelInput) })
+            companion.setVariableValues({ [variableNameInput]: getDbuValue(levelInput) })
 
             return
         }
@@ -57,7 +61,7 @@ export function processIncomingData(data, {companion}, state) {
 
             let zoneLvlChangeNum = parseInt(data[2]) + 1
             let levelZone = parseInt(data[6])
-            let variableNameZone = Helpers.getVarNameZoneLevel(zoneLvlChangeNum)
+            let variableNameZone = getVarNameZoneLevel(zoneLvlChangeNum)
 
             companion.log(
                 'debug',
@@ -65,9 +69,9 @@ export function processIncomingData(data, {companion}, state) {
             )
 
             // Put value in state store if it's being tracked
-            state.setChannel('zone', zoneLvlChangeNum, levelZone, undefined)
+            state.setChannel(ChannelType.Zone, zoneLvlChangeNum, levelZone, undefined)
 
-            companion.setVariableValues({ [variableNameZone]: this.getDbuValue(levelZone) })
+            companion.setVariableValues({ [variableNameZone]: getDbuValue(levelZone) })
 
             return
         }
@@ -76,17 +80,17 @@ export function processIncomingData(data, {companion}, state) {
 
             let cgLvlChangeNum = parseInt(data[2]) + 1
             let levelCG = parseInt(data[6])
-            let variableNameCG = Helpers.getVarNameCGLevel(cgLvlChangeNum)
+            let variableNameCG = getVarNameCGLevel(cgLvlChangeNum)
 
             companion.log(
                 'debug',
-                `Control Group ${cgLvlChangeNum} has new level: ${levelCG} (dec) = ${this.getDbuValue(levelCG)} (dBu), changing variable ${variableNameCG}`,
+                `Control Group ${cgLvlChangeNum} has new level: ${levelCG} (dec) = ${getDbuValue(levelCG)} (dBu), changing variable ${variableNameCG}`,
             )
 
             // Put value in state store if it's being tracked
-            state.setChannel('cg', cgLvlChangeNum, levelCG, undefined)
+            state.setChannel(ChannelType.ControlGroup, cgLvlChangeNum, levelCG, undefined)
 
-            companion.setVariableValues({ [variableNameCG]: this.getDbuValue(levelCG) })
+            companion.setVariableValues({ [variableNameCG]: getDbuValue(levelCG) })
 
             return
         }
@@ -120,7 +124,7 @@ export function processIncomingData(data, {companion}, state) {
             // first value of hex:91 means zone mute
             let mute = data[2] == 63 ? false : true
             let channel = parseInt(data[1]) + 1
-            state.setChannel('zone', channel, undefined, mute)
+            state.setChannel(ChannelType.Zone, channel, undefined, mute)
 
             companion.checkFeedbacks('zoneMute')
             return
@@ -129,7 +133,7 @@ export function processIncomingData(data, {companion}, state) {
             // first value of hex:92 means channel group mute
             let mute = data[2] == 63 ? false : true
             let channel = parseInt(data[1]) + 1
-            state.setChannel('cg', channel, undefined, mute)
+            state.setChannel(ChannelType.ControlGroup, channel, undefined, mute)
 
             companion.checkFeedbacks('cgMute')
             return

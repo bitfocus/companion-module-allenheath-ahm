@@ -1,4 +1,5 @@
 import { InstanceBase } from '@companion-module/base'
+import { dbu_Values } from './constants.js'
 
 /**
  * Generates a Dropdown Choices Array with labelled incrementing values.
@@ -119,4 +120,17 @@ export function getSendChTypeOfSendType(sendType) {
  */
 export function sleep(ms) {
 	return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+/**
+ * Return corresponding dBu Value to decimal number
+ * @param {*} dezValue 
+ * @returns 
+ */
+export function getDbuValue(dezValue) {
+	if (Number.isInteger(dezValue) == false || dezValue > 127 || dezValue < 0) {
+		return NaN
+	}
+
+	return dbu_Values[dezValue]
 }

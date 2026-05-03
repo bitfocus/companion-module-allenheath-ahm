@@ -132,12 +132,18 @@ export const dbu_Values = [
 	'+10.0',
 ]
 
-// Channel Type (Variable N in documentation)
+/**
+ * Channel Channel Type (Variable N in documentation)
+ */
 export const ChannelType = {
 	Input: 0,
 	Zone: 1,
 	ControlGroup: 2,
 }
+
+/**
+ * @typedef {typeof ChannelType[keyof typeof ChannelType]} ChannelType
+ */
 
 // Send Type, high nibble stands for channel type, low nibble stands for send channel type
 export const SendType = {

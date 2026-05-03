@@ -14,7 +14,7 @@ export function trackAHMParams() {
 
     /**
      * Adds channel to tracked parameters
-     * @param {String} type - input, mute, or cg
+     * @param {ChannelType} type - ChannelType (Input, Zone, or ControlGroup)
      * @param {Number} id - channel number
      */
     function addChannel(type, id) {
@@ -29,7 +29,7 @@ export function trackAHMParams() {
 
     /**
      * Removes channel from tracked parameters
-     * @param {String} type - input, mute, or cg
+     * @param {ChannelType} type - ChannelType (Input, Zone, or ControlGroup)
      * @param {Number} id - channel number
      */
     function removeChannel(type, id) {
@@ -38,7 +38,7 @@ export function trackAHMParams() {
 
     /**
      * Stores channel information in tracked channels
-     * @param {String} type - input, mute, or cg
+     * @param {ChannelType} type - ChannelType (Input, Zone, or ControlGroup)
      * @param {Number} id - channel number
      * @param {String} level - level of channel in dBu
      * @param {Boolean} mute - incoming mute status of channel
@@ -59,16 +59,16 @@ export function trackAHMParams() {
 
     /**
      * Get list of tracked channels
-     * @param {String} type - input, mute, or cg
+     * @param {ChannelType} type - ChannelType (Input, Zone, or ControlGroup)
      * @returns {Number[]} Array of tracked channel numbers
      */
     function getTrackedChannels(type) {
-        return [...trackedChannels[type].keys()]
+        return [...(trackedChannels[type]?.keys() ?? [])]
     }
 
     /**
      * Checks to see if tracked channel is in AHM state
-     * @param {*} type - input, mute, or cg
+     * @param {ChannelType} type - ChannelType (Input, Zone, or ControlGroup)
      * @param {*} id - channel id
      * @returns {Boolean} - True/False if tracked channel exists in state
      */
@@ -78,7 +78,7 @@ export function trackAHMParams() {
 
     /**
      * Adds an input or zone send to be tracked
-     * @param {String} type 
+     * @param {ChannelType} type - ChannelType (Input, Zone, or ControlGroup)
      * @param {Number} idFrom 
      * @param {Number} idTo 
      */
@@ -94,7 +94,7 @@ export function trackAHMParams() {
 
     /**
      * Removed an input or zone send from tracking
-     * @param {String} type 
+     * @param {ChannelType} type - ChannelType (Input, Zone, or ControlGroup)
      * @param {Number} idFrom 
      * @param {Number} idTo 
      */
@@ -107,7 +107,7 @@ export function trackAHMParams() {
 
     /**
      * Updates send information in tracked channels
-     * @param {String} type 
+     * @param {ChannelType} type - ChannelType (Input, Zone, or ControlGroup)
      * @param {Number} idFrom 
      * @param {Number} idTo 
      * @param {String} level 
@@ -123,7 +123,7 @@ export function trackAHMParams() {
 
     /**
      * Get list of tracked sends for a specific channel
-     * @param {String} type - input, mute, or cg
+     * @param {ChannelType} type - ChannelType (Input, Zone, or ControlGroup)
      * @param {Number} id - channel number
      * @returns {Number[]} Array of tracked sends for specified channel
      */
@@ -134,7 +134,7 @@ export function trackAHMParams() {
 
     /**
      * Get level of channel from tracked channels
-     * @param {String} type - input, mute, or cg
+     * @param {ChannelType} type - ChannelType (Input, Zone, or ControlGroup)
      * @param {Number} id - channel number
      * @returns {String} Level of channel in dBu
      */
@@ -145,7 +145,7 @@ export function trackAHMParams() {
 
     /**
      * Get mute status of channel from tracked channels
-     * @param {String} type - input, mute, or cg
+     * @param {ChannelType} type - ChannelType (Input, Zone, or ControlGroup)
      * @param {Number} id - channel number
      * @returns {Boolean} Mute status of channel
      */
@@ -156,7 +156,7 @@ export function trackAHMParams() {
 
     /**
      * Get level of channel send from tracked channels
-     * @param {String} type - input, mute, or cg
+     * @param {ChannelType} type - ChannelType (Input, Zone, or ControlGroup)
      * @param {Number} id - channel number
      * @returns {String} Level of channel in dBu
      */
@@ -169,7 +169,7 @@ export function trackAHMParams() {
 
     /**
      * Get mute status of channel send from tracked channels
-     * @param {String} type - input, mute, or cg
+     * @param {ChannelType} type - ChannelType (Input, Zone, or ControlGroup)
      * @param {Number} id - channel number
      * @returns {Boolean} Mute status of channel
      */
