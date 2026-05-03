@@ -1,28 +1,23 @@
-import { combineRgb } from '@companion-module/base'
-import * as Constants from './constants.js'
+import { Colors, SendType, MonitoredFeedbackType, ChannelType } from './src/utility/constants.js'
 
-export function getFeedbacks() {
+export function getFeedbacks(state) {
 	const feedbacks = {}
 
-	const ColorWhite = combineRgb(255, 255, 255)
-	const ColorRed = combineRgb(200, 0, 0)
-	const ColorBlue = combineRgb(5, 151, 242)
-
 	// builds an object containing all relevant information to monitor a feedback of some type
-	this.buildFeedbackMonitoringObject = (feedback) => {
+	function buildFeedbackMonitoringObject(feedback) {
 		let extractedFeedbackInfo = {}
 		extractedFeedbackInfo.id = feedback.id
 
 		switch (feedback.feedbackId) {
 			case 'inputToZoneMute':
-				extractedFeedbackInfo.type = Constants.MonitoredFeedbackType.MuteState
-				extractedFeedbackInfo.sendType = Constants.SendType.InputToZone
+				extractedFeedbackInfo.type = MonitoredFeedbackType.MuteState
+				extractedFeedbackInfo.sendType = SendType.InputToZone
 				extractedFeedbackInfo.channel = feedback.options.input
 				extractedFeedbackInfo.sendChannel = feedback.options.zone
 				break
 
 			default:
-				extractedFeedbackInfo.type = Constants.MonitoredFeedbackType.Undefined
+				extractedFeedbackInfo.type = MonitoredFeedbackType.Undefined
 		}
 
 		return extractedFeedbackInfo
@@ -33,8 +28,8 @@ export function getFeedbacks() {
 		name: 'Change background when input on mute',
 		description: 'When you mute the input change color',
 		defaultStyle: {
-			color: ColorWhite,
-			bgcolor: ColorRed,
+			color: Colors.White,
+			bgcolor: Colors.Red,
 		},
 		options: [
 			{
@@ -45,8 +40,20 @@ export function getFeedbacks() {
 			},
 		],
 		callback: (feedback, bank) => {
-			return this.inputsMute[parseInt(feedback.options.input) - 1] == 1
+			let input = parseInt(feedback.options.input)
+			console.log('feedback log', input, feedback.options.input)
+			if (!state.hasTrackedChannel(ChannelType.Input, input)) {
+				state.addChannel(ChannelType.Input, input)
+			}
+
+			let value = state.getMute(ChannelType.Input, input)
+			console.log('feedback eval:', input, value)
+			return value
 		},
+		unsubscribe: (feedback) => {
+			let input = parseInt(feedback.options.input)
+			state.removeChannel(ChannelType.Input, input)
+		}
 	}
 
 	feedbacks['zoneMute'] = {
@@ -54,8 +61,8 @@ export function getFeedbacks() {
 		name: 'Change background when zone on mute',
 		description: 'When you mute the zone change color',
 		defaultStyle: {
-			color: ColorWhite,
-			bgcolor: ColorRed,
+			color: Colors.White,
+			bgcolor: Colors.Red,
 		},
 		options: [
 			{
@@ -66,8 +73,13 @@ export function getFeedbacks() {
 			},
 		],
 		callback: (feedback, bank) => {
-			return this.zonesMute[parseInt(feedback.options.zone) - 1] == 1
+			let zone = feedback.options.zone
+			state.addChannel('zone', zone)
+			return state.getMute('zone', zone)
 		},
+		unsubscribe: (feedback) => {
+			state.removeChannel('zone', feedback.options.zone)
+		}
 	}
 
 	feedbacks['cgMute'] = {
@@ -75,8 +87,8 @@ export function getFeedbacks() {
 		name: 'Change background when control group on mute',
 		description: 'When you mute the control group change color',
 		defaultStyle: {
-			color: ColorWhite,
-			bgcolor: ColorRed,
+			color: Colors.White,
+			bgcolor: Colors.Red,
 		},
 		options: [
 			{
@@ -87,8 +99,13 @@ export function getFeedbacks() {
 			},
 		],
 		callback: (feedback, bank) => {
-			return this.controlgroupsMute[parseInt(feedback.options.cg) - 1] == 1
+			let cg = feedback.options.cg
+			state.addChannel('cg', cg)
+			return state.getMute('cg', cg)
 		},
+		unsubscribe: (feedback) => {
+			state.removeChannel('cg', feedback.options.cg)
+		}
 	}
 
 	feedbacks['inputToZoneMute'] = {
@@ -96,8 +113,8 @@ export function getFeedbacks() {
 		name: 'Change background when input to zone on mute',
 		description: 'When you mute the input on a zone change color',
 		defaultStyle: {
-			color: ColorWhite,
-			bgcolor: ColorRed,
+			color: Colors.White,
+			bgcolor: Colors.Red,
 		},
 		options: [
 			{
@@ -114,20 +131,12 @@ export function getFeedbacks() {
 			},
 		],
 		callback: (feedback, bank) => {
-			return this.inputsToZonesMute[parseInt(feedback.options.input)]?.[parseInt(feedback.options.zone)] == 1
-		},
-		subscribe: (feedback) => {
-			// add this feedback to the monitored feedbacks
-			this.monitoredFeedbacks.push(this.buildFeedbackMonitoringObject(feedback))
+			state.addChannel(ChannelType.Input, feedback.options.input)
+			state.addSend(ChannelType.Input, feedback.options.input, feedback.options.zone)
+			return state.getSendMute('intput', feedback.options.input, feedback.options.zone)
 		},
 		unsubscribe: (feedback) => {
-			// remove this feedback from the monitored feedbacks
-			// find index of feedback with this ID in the array
-			const feedbackIndex = this.monitoredFeedbacks.findIndex((monFeedback) => monFeedback.id == feedback.id)
-			if (feedbackIndex > -1) {
-				// only splice array when feedback was found
-				this.monitoredFeedbacks.splice(feedbackIndex, 1) // 2nd parameter means remove one item only
-			}
+			state.removeSend(ChannelType.Input, feedback.options.input, feedback.options.zone)
 		},
 	}
 
@@ -136,8 +145,8 @@ export function getFeedbacks() {
 		name: 'Active Preset',
 		description: 'Reacts when a specific preset has been recalled',
 		defaultStyle: {
-			color: ColorWhite,
-			bgcolor: ColorBlue,
+			color: Colors.White,
+			bgcolor: Colors.Blue,
 		},
 		options: [
 			{
@@ -149,7 +158,8 @@ export function getFeedbacks() {
 			},
 		],
 		callback: (feedback) => {
-			return this.currentPreset == feedback.options.preset 
+			let currentPreset = state.getPreset()
+			return currentPreset == feedback.options.preset 
 		},
 	}
 

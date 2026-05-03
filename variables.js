@@ -1,11 +1,11 @@
-import * as Helpers from './helpers.js'
+import * as Helpers from './src/utility/helpers.js'
 
-export function getVariables() {
+export function getVariables(numberOfInputs, numberOfZones) {
 	const variableDefinitions = []
 	const variableInitValuesArray = []
 
 	// generate input level variables
-	let unitInAmount = this.numberOfInputs
+	let unitInAmount = numberOfInputs
 	for (let i = 1; i <= unitInAmount; i++) {
 		let varId = Helpers.getVarNameInputLevel(i)
 		variableDefinitions.push({
@@ -19,7 +19,7 @@ export function getVariables() {
 	}
 
 	// generate zone level variables
-	let unitZoneAmount = this.numberOfZones
+	let unitZoneAmount = numberOfZones
 	for (let i = 1; i <= unitZoneAmount; i++) {
 		let varId = Helpers.getVarNameZoneLevel(i)
 		variableDefinitions.push({
@@ -33,7 +33,7 @@ export function getVariables() {
 	}
 
 	// generate control group level variables
-	let unitControlGroupAmount = this.numberOfControlGroups
+	let unitControlGroupAmount = 32
 	for (let i = 1; i <= unitControlGroupAmount; i++) {
 		let varId = Helpers.getVarNameCGLevel(i)
 		variableDefinitions.push({

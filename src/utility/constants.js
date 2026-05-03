@@ -1,3 +1,5 @@
+import { combineRgb } from '@companion-module/base'
+
 // dBu Decimal Mapping Array
 export const dbu_Values = [
 	'-inf',
@@ -130,12 +132,18 @@ export const dbu_Values = [
 	'+10.0',
 ]
 
-// Channel Type (Variable N in documentation)
+/**
+ * Channel Channel Type (Variable N in documentation)
+ */
 export const ChannelType = {
 	Input: 0,
 	Zone: 1,
 	ControlGroup: 2,
 }
+
+/**
+ * @typedef {typeof ChannelType[keyof typeof ChannelType]} ChannelType
+ */
 
 // Send Type, high nibble stands for channel type, low nibble stands for send channel type
 export const SendType = {
@@ -154,4 +162,12 @@ export const PlaybackChannel = {
 	Mono1: 0,
 	Mono2: 1,
 	Stereo: 2,
+}
+
+// Color swatches across the entire module
+export const Colors = {
+	White: combineRgb(255, 255, 255),
+	Red: combineRgb(200, 0, 0),
+	Blue: combineRgb(5, 151, 242),
+	Black: combineRgb(0, 0, 0)
 }
