@@ -3,13 +3,14 @@ import { getActions } from './actions.js'
 import { getPresets } from './presets.js'
 import { getVariables } from './variables.js'
 import { getFeedbacks } from './feedbacks.js'
-import { requestLevelInfo, requestMuteInfo, requestSendMuteInfo } from './src/utility/formatRequest.js'
+import { requestLevelInfo, requestMuteInfo, requestSendMuteInfo } from './src/utility/formatHexMIDI.js'
 import UpgradeScripts from './upgrades.js'
 import * as Constants from './src/utility/constants.js'
 import * as Helpers from './src/utility/helpers.js'
 import { configFields } from './src/config.js'
 import { trackAHMParams } from './src/state/AHMState.js'
 import { TCPClient } from './src/client/TCP.js'
+import { pollStateTimer } from './src/client/pollState.js'
 
 const MIDI_PORT = 51325
 const TIME_BETW_MULTIPLE_REQ_MS = 150
@@ -37,7 +38,7 @@ class AHMInstance extends InstanceBase {
 		// most recently recalled preset
 		this.currentPreset = 0
 
-		// Set up used feedbacks tracker
+		// Set up state container
 		this.AHMState = trackAHMParams()
 
 		// Assign TCP client
@@ -50,6 +51,14 @@ class AHMInstance extends InstanceBase {
 			}
 		}, this.AHMState)
 
+		// Set up state polling
+		this.pollState = pollStateTimer(
+			this.tcpClient,
+			this.config.pollRate,
+			this.AHMState,
+			(err) => console.error("Poller error:", err)
+		)
+
 		// then set unit type according to config; reduces traffic if smaller AHM is used
 		this.initUnitType()
 		this.tcpClient.initTCP(this.config.host, MIDI_PORT)
@@ -61,6 +70,7 @@ class AHMInstance extends InstanceBase {
 
 	async destroy() {
 		this.tcpClient.destroyTCP()
+		this.pollState.stop()
 		this.log('debug', 'destroy')
 	}
 
@@ -85,10 +95,19 @@ class AHMInstance extends InstanceBase {
 
 	async configUpdated(config) {
 		this.config = config
+		
+		// Set up state polling
+		this.pollState = pollStateTimer(
+			this.tcpClient,
+			this.config.pollRate,
+			this.AHMState,
+			(err) => console.error("Poller error:", err)
+		)
+		this.pollState.start()
 		this.initUnitType()
 		this.initActions()
 		this.initVariables()
-		this.initTCP()
+		this.tcpClient.initTCP(this.config.host, MIDI_PORT)
 	}
 
 	getConfigFields() {
@@ -199,15 +218,6 @@ class AHMInstance extends InstanceBase {
 	setVariableValues(values) {
 		this.log('debug', `Updating variables: ${JSON.stringify(values)} `)
 		super.setVariableValues(values)
-	}
-
-	/* Return corresponding dBu Value to decimal number */
-	getDbuValue(dezValue) {
-		if (Number.isInteger(dezValue) == false || dezValue > 127 || dezValue < 0) {
-			return NaN
-		}
-
-		return Constants.dbu_Values[dezValue]
 	}
 
 	/* case 'get_phantom':
