@@ -4,15 +4,15 @@ import { processIncomingData } from "./processIncomingData.js"
 export function TCPClient({companion}, state) {
     let midiSocket
 
-    function destroyTCP() {
+    function destroy() {
         if (!midiSocket) return
 
         midiSocket.destroy()
         midiSocket = undefined
     }
 
-    function initTCP(host, port) {
-        destroyTCP()
+    function init(host, port) {
+        destroy()
 
         if (!host || !port) return 
 
@@ -38,7 +38,7 @@ export function TCPClient({companion}, state) {
         })
     }
 
-    function sendCommand(buffers) {
+    function send(buffers) {
         if (buffers.length !== 0) {
             for (let i = 0; i < buffers.length; i++) {
                 if (!midiSocket) return
@@ -49,9 +49,9 @@ export function TCPClient({companion}, state) {
         }
 
     return {
-        destroyTCP,
-        initTCP,
-        sendCommand
+        destroy,
+        init,
+        send
     }
 
 }

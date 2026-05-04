@@ -10,7 +10,7 @@ export function trackAHMParams() {
         [ChannelType.Zone]: new Map(),
         [ChannelType.ControlGroup]: new Map(),
     }
-    const lastPreset = 0
+    let lastPreset = 0
 
     /**
      * Adds channel to tracked parameters
@@ -18,13 +18,13 @@ export function trackAHMParams() {
      * @param {Number} id - channel number
      */
     function addChannel(type, id) {
-        if (!trackedChannels[type].has(id)) {
-            trackedChannels[type].set(id, {
-                level: '-inf',
-                mute: false,
-                sends: new Map()
-            })
-        }
+        if (trackedChannels[type].has(id)) return
+
+        trackedChannels[type].set(id, {
+            level: '-inf',
+            mute: false,
+            sends: new Map()
+        })
     }
 
     /**
@@ -34,6 +34,7 @@ export function trackAHMParams() {
      */
     function removeChannel(type, id) {
         trackedChannels[type].delete(id)
+        console.log(`Deleting from map ${type} id: ${id}`)
     }
 
     /**
@@ -83,8 +84,11 @@ export function trackAHMParams() {
      * @param {Number} idTo 
      */
     function addSend(type, idFrom, idTo) {
-        const channel = trackedChannels[type].get(idFrom)
-        if (!channel) return
+        const channel = trackedChannels[type]?.get(idFrom)
+        if (!channel) {
+            addChannel(type, idFrom)
+            channel = trackedChannels[type]?.get(idFrom)
+        }
 
         channel.sends.set(idTo, {
             level: '-inf',
@@ -115,10 +119,13 @@ export function trackAHMParams() {
      */
     function setSend(type, idFrom, idTo, level, mute) {
         const send = trackedChannels[type].get(idFrom)?.sends.get(idTo)
-        if (!send) return
+        if (!send) {
+            addSend(type, idFrom, idTo)
+            send = trackedChannels[type].get(idFrom)?.sends.get(idTo)
+        }
 
-        send.level = level
-        send.mute = mute
+        if (level !== undefined) send.level = level
+        if (mute !== undefined) send.mute = mute
     }
 
     /**

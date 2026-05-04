@@ -15,11 +15,11 @@ export const configFields = [
         label: 'Type of Device (Re-enable required after change)',
         width: 6,
         choices: [
-            { id: 'ahm64', label: 'AHM-64' },
-            { id: 'ahm32', label: 'AHM-32' },
-            { id: 'ahm16', label: 'AHM-16' },
+            { id: '64', label: 'AHM-64' },
+            { id: '32', label: 'AHM-32' },
+            { id: '16', label: 'AHM-16' },
         ],
-        default: 'ahm64',
+        default: '64',
     },
     {
         type: 'number',

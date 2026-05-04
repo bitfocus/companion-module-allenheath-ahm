@@ -11,24 +11,23 @@ export function processIncomingData(data, {companion}, state) {
         // receiving SysEx data
         if (data[9] === 0x03) {
             // receiving send mute data
-
-            /* console.log(
-                `Input ${parseInt(data[10]) + 1} to zone Zone ${parseInt(data[12]) + 1} ${
-                    data[13] == 63 ? 'unmute' : 'mute'
-                }`
-            )
-            this.log(
-                'debug',
-                `Input ${parseInt(data[10]) + 1} to zone Zone ${parseInt(data[12]) + 1} ${
-                    data[13] == 63 ? 'unmute' : 'mute'
-                }`
-            )*/
-
             let inputNum = parseInt(data[10]) + 1
             let zoneNum = parseInt(data[12]) + 1
-            let muteState = data[13] == 63 ? 0 : 1
+            let mute
 
-            this.updateSendMuteState(Constants.SendType.InputToZone, inputNum, zoneNum, muteState)
+            switch (data[13]) {
+                case 127:
+                    mute = true
+                    break;
+                case 63:
+                    mute = false
+                    break;
+                default:
+                    break;
+            }
+
+            state.setSend(ChannelType.Input, inputNum, zoneNum, undefined, mute)
+            companion.log('debug', `RECIEVED: send mute data -- Input ${inputNum} to Zone ${zoneNum} is ${mute ? 'muted' : 'unmuted'}`)
             companion.checkFeedbacks('inputToZoneMute')
             return
         }
@@ -65,7 +64,7 @@ export function processIncomingData(data, {companion}, state) {
 
             companion.log(
                 'debug',
-                `Zone ${zoneLvlChangeNum} has new level: ${levelZone} (dec) = ${this.getDbuValue(levelZone)} (dBu), changing variable ${variableNameZone}`,
+                `Zone ${zoneLvlChangeNum} has new level: ${levelZone} (dec) = ${getDbuValue(levelZone)} (dBu), changing variable ${variableNameZone}`,
             )
 
             // Put value in state store if it's being tracked
@@ -98,22 +97,22 @@ export function processIncomingData(data, {companion}, state) {
 
     if (data[0] === 0x90 || data[0] === 0x91 || data[0] === 0x92) {
         // first value of hex:90, hex:91, or hex:92 means mute of some kind
+        let mute
+        let channel = parseInt(data[1]) + 1
+
+        switch (data[2]) {
+            case 127:
+                mute = true
+                break;
+            case 63:
+                mute = false
+                break;
+            default:
+                break;
+        }
+
         if (data[0] === 0x90) {
             // first value of hex:90 means channel mute
-            // data[2] 63 == unmute, 127 == mute
-            let mute = undefined
-            switch (data[2]) {
-                case 127:
-                    mute = true
-                    break;
-                case 63:
-                    mute = false
-                    break;
-                default:
-                    break;
-            }
-
-            let channel = parseInt(data[1]) + 1
             state.setChannel(ChannelType.Input, channel, undefined, mute)
 
             companion.checkFeedbacks('inputMute')
@@ -122,8 +121,6 @@ export function processIncomingData(data, {companion}, state) {
         }
         if (data[0] === 0x91) {
             // first value of hex:91 means zone mute
-            let mute = data[2] == 63 ? false : true
-            let channel = parseInt(data[1]) + 1
             state.setChannel(ChannelType.Zone, channel, undefined, mute)
 
             companion.checkFeedbacks('zoneMute')
@@ -131,8 +128,6 @@ export function processIncomingData(data, {companion}, state) {
         }
         if (data[0] === 0x92) {
             // first value of hex:92 means channel group mute
-            let mute = data[2] == 63 ? false : true
-            let channel = parseInt(data[1]) + 1
             state.setChannel(ChannelType.ControlGroup, channel, undefined, mute)
 
             companion.checkFeedbacks('cgMute')
@@ -148,8 +143,8 @@ export function processIncomingData(data, {companion}, state) {
         let preset = presetNum + (presetNumOffset * 128) + 1
         state.setPreset(preset)
 
-        companion.log('info', `Preset ${this.currentPreset} recalled`)
-        companion.setVariableValues({currentPreset: this.currentPreset})
+        companion.log('info', `Preset ${state.getPreset()} recalled`)
+        companion.setVariableValues({currentPreset: state.getPreset()})
         companion.checkFeedbacks('currentPreset')
         return
     }

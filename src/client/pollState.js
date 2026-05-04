@@ -28,31 +28,31 @@ export function pollStateTimer(
 
             for (const i of inputs) {
                 req = requestLevelInfo(ChannelType.Input, i)
-                socket.sendCommand(req)
+                socket.send(req)
                 await sleep(150)
 
                 req = requestMuteInfo(ChannelType.Input, i)
-                socket.sendCommand(req)
+                socket.send(req)
                 await sleep(150)
             }
 
             for (const z of zones) {
                 req = requestLevelInfo(ChannelType.Zone, z)
-                socket.sendCommand(req)
+                socket.send(req)
                 await sleep(150)
 
                 req = requestMuteInfo(ChannelType.Zone, z)
-                socket.sendCommand(req)
+                socket.send(req)
                 await sleep(150)
             }
 
             for (const c of cgs) {
                 req = requestLevelInfo(ChannelType.ControlGroup, c)
-                socket.sendCommand(req)
+                socket.send(req)
                 await sleep(150)
 
                 req = requestMuteInfo(ChannelType.ControlGroup, c)
-                socket.sendCommand(req)
+                socket.send(req)
                 await sleep(150)
             }
 
