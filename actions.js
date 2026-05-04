@@ -184,34 +184,37 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 	actions['mute_input'] = {
 		name: 'Mute Input',
 		options: muteOptions('Input', numberOfInputs, -1),
-		callback: (action) => {
+		callback: async (action) => {
 			let inputNumber = parseInt(action.options.mute_number)
 			let buffers = [Buffer.from([0x90, inputNumber, action.options.mute ? 0x7f : 0x3f, 0x90, inputNumber, 0])]
-
-			tcpClient.sendCommand(buffers)
-			sleep(150)
+			tcpClient.send(buffers)
+			await sleep(150)
 			
 			buffers = requestMuteInfo(ChannelType.Input, action.options.mute_number)
-			console.log('action sending out: ', buffers, action.options.mute_number)
-			tcpClient.sendCommand(buffers)
+			console.log('Request mute info -- Input: ', buffers, action.options.mute_number)
+			tcpClient.send(buffers)
 
-			sleep(150)
+			await sleep(150)
 			console.log('checking feedback inputMute')
 			companion.checkFeedbacks('inputMute')
-			// state.setChannel(ChannelType.Input, inputNumber, undefined, action.options.mute)
-			// companion.checkFeedbacks('inputMute')
 		},
 	}
 
 	actions['mute_zone'] = {
 		name: 'Mute Zone',
 		options: muteOptions('Zone', numberOfInputs, -1),
-		callback: (action) => {
+		callback: async (action) => {
 			let zoneNumber = parseInt(action.options.mute_number)
 			let mute = action.options.mute
 			let buffers = [Buffer.from([0x91, zoneNumber, action.options.mute ? 0x7f : 0x3f, 0x91, zoneNumber, 0])]
+			tcpClient.send(buffers)
+			await sleep(150)
 
-			tcpClient.sendCommand(buffers)
+			buffers = requestMuteInfo(ChannelType.Zone, action.options.mute_number)
+			console.log('Request mute info -- Zone: ', buffers, action.options.mute_number)
+			tcpClient.send(buffers)
+
+			await sleep(150)
 			state.setChannel(ChannelType.Zone, zoneNumber, undefined, mute)
 			companion.checkFeedbacks('zoneMute')
 		},
@@ -234,7 +237,7 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 					presetOffset,
 				]),
 			]
-			tcpClient.sendCommand(buffers)
+			tcpClient.send(buffers)
 		},
 	}
 
@@ -253,7 +256,7 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 				Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12, 0x01, 0x00, 0x00, 0x06, playbackChannel, trackNumber, 0xf7]),
 			]
 
-			tcpClient.sendCommand(buffers)
+			tcpClient.send(buffers)
 		},
 	}
 
@@ -285,15 +288,10 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 					0xf7,
 				]),
 			]
-			tcpClient.sendCommand(buffers)
+			tcpClient.send(buffers)
 
-			// manually update internal state, (internal state works with user-number, hence + 1)
-			this.updateSendMuteState(
-				SendType.InputToZone,
-				inputNumber + 1,
-				zoneNumber + 1,
-				action.options.mute ? 1 : 0,
-			)
+			// manually update internal state
+            state.setSend(ChannelType.Input, inputNumber, zoneNumber, undefined, action.options.mute)
 
 			companion.checkFeedbacks('inputToZoneMute')
 		},
@@ -304,9 +302,9 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 		options: setLevelOptions(ChannelType.Input, numberOfInputs, -1),
 		callback: async (action) => {
 			let buffers = setLevelCallback(action, ChannelType.Input)
-			tcpClient.sendCommand(buffers)
+			tcpClient.send(buffers)
 			await sleep(150)
-			tcpClient.sendCommand(requestLevelInfo(ChannelType.Input, action.options.setlvl_ch_number))
+			tcpClient.send(requestLevelInfo(ChannelType.Input, action.options.setlvl_ch_number))
 		},
 	}
 
@@ -315,9 +313,9 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 		options: incDecOptions(ChannelType.Input, numberOfInputs, -1),
 		callback: async (action) => {
 			let buffers = incDecLevelCallback(action, ChannelType.Input)
-			tcpClient.sendCommand(buffers)
+			tcpClient.send(buffers)
 			await sleep(150)
-			tcpClient.sendCommand(requestLevelInfo(ChannelType.Input, action.options.setlvl_ch_number))
+			tcpClient.send(requestLevelInfo(ChannelType.Input, action.options.setlvl_ch_number))
 		},
 	}
 
@@ -326,9 +324,9 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 		options: setLevelOptions('Zone', numberOfZones, -1),
 		callback: async (action) => {
 			let buffers = setLevelCallback(action, ChannelType.Zone)
-			tcpClient.sendCommand(buffers)
+			tcpClient.send(buffers)
 			await sleep(150)
-			tcpClient.sendCommand(requestLevelInfo(ChannelType.Zone, action.options.setlvl_ch_number))
+			tcpClient.send(requestLevelInfo(ChannelType.Zone, action.options.setlvl_ch_number))
 		},
 	}
 
@@ -337,9 +335,9 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 		options: incDecOptions('Zone', numberOfZones, -1),
 		callback: async (action) => {
 			let buffers = incDecLevelCallback(action, ChannelType.Zone)
-			tcpClient.sendCommand(buffers)
+			tcpClient.send(buffers)
 			await sleep(150)
-			tcpClient.sendCommand(requestLevelInfo(ChannelType.Zone, action.options.setlvl_ch_number))
+			tcpClient.send(requestLevelInfo(ChannelType.Zone, action.options.setlvl_ch_number))
 		},
 	}
 
@@ -350,7 +348,7 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 		),
 		callback: async (action) => {
 			let buffers = incDecSendLevelCallback(action, SendType.InputToZone)
-			tcpClient.sendCommand(buffers)
+			tcpClient.send(buffers)
 		},
 	}
 
@@ -361,7 +359,7 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 		),
 		callback: async (action) => {
 			let buffers = incDecSendLevelCallback(action, SendType.ZoneToZone)
-			tcpClient.sendCommand(buffers)
+			tcpClient.send(buffers)
 		},
 	}
 
@@ -371,7 +369,7 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 		options: setLevelOptions('Control Group', 32, -1),
 		callback: async (action) => {
 			let buffers = setLevelCallback(action, ChannelType.ControlGroup)
-			tcpClient.sendCommand(buffers)
+			tcpClient.send(buffers)
 		},
 	}
 
@@ -380,9 +378,9 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 		options: incDecOptions('Control Group', 32, -1),
 		callback: async (action) => {
 			incDecLevelCallback(action, ChannelType.ControlGroup)
-			tcpClient.sendCommand(buffers)
+			tcpClient.send(buffers)
 			await sleep(150)
-			tcpClient.sendCommand(requestLevelInfo(ChannelType.ControlGroup, action.options.setlvl_ch_number))
+			tcpClient.send(requestLevelInfo(ChannelType.ControlGroup, action.options.setlvl_ch_number))
 
 		},
 	}
@@ -390,12 +388,18 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 	actions['mute_controlgroup'] = {
 		name: 'Mute Control Group',
 		options: muteOptions('Control Group', 32, -1),
-		callback: (action) => {
+		callback: async (action) => {
 			let cgNumber = parseInt(action.options.mute_number)
 			let mute = action.options.mute
-			let buffers = [Buffer.from([0x92, cgNumber, action.options.mute ? 0x7f : 0x3f, 0x92, cgNumber, 0])]
+			let buffers = [Buffer.from([0x92, cgNumber, action.options.mute ? 0x7f : 0x3f, 0x91, cgNumber, 0])]
+			tcpClient.send(buffers)
+			await sleep(150)
 
-			tcpClient.sendCommand(buffers)
+			buffers = requestMuteInfo(ChannelType.ControlGroup, action.options.mute_number)
+			console.log('Request mute info -- Control Group: ', buffers, action.options.mute_number)
+			tcpClient.send(buffers)
+
+			await sleep(150)
 			state.setChannel(ChannelType.ControlGroup, cgNumber, undefined, mute)
 			companion.checkFeedbacks('cgMute')
 		},

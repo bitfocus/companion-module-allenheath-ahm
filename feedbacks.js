@@ -3,26 +3,6 @@ import { Colors, SendType, MonitoredFeedbackType, ChannelType } from './src/util
 export function getFeedbacks(state) {
 	const feedbacks = {}
 
-	// builds an object containing all relevant information to monitor a feedback of some type
-	function buildFeedbackMonitoringObject(feedback) {
-		let extractedFeedbackInfo = {}
-		extractedFeedbackInfo.id = feedback.id
-
-		switch (feedback.feedbackId) {
-			case 'inputToZoneMute':
-				extractedFeedbackInfo.type = MonitoredFeedbackType.MuteState
-				extractedFeedbackInfo.sendType = SendType.InputToZone
-				extractedFeedbackInfo.channel = feedback.options.input
-				extractedFeedbackInfo.sendChannel = feedback.options.zone
-				break
-
-			default:
-				extractedFeedbackInfo.type = MonitoredFeedbackType.Undefined
-		}
-
-		return extractedFeedbackInfo
-	}
-
 	feedbacks['inputMute'] = {
 		type: 'boolean',
 		name: 'Change background when input on mute',
@@ -74,11 +54,11 @@ export function getFeedbacks(state) {
 		],
 		callback: (feedback, bank) => {
 			let zone = feedback.options.zone
-			state.addChannel('zone', zone)
-			return state.getMute('zone', zone)
+			state.addChannel(ChannelType.Zone, zone)
+			return state.getMute(ChannelType.Zone, zone)
 		},
 		unsubscribe: (feedback) => {
-			state.removeChannel('zone', feedback.options.zone)
+			state.removeChannel(ChannelType.Zone, feedback.options.zone)
 		}
 	}
 
@@ -100,11 +80,11 @@ export function getFeedbacks(state) {
 		],
 		callback: (feedback, bank) => {
 			let cg = feedback.options.cg
-			state.addChannel('cg', cg)
-			return state.getMute('cg', cg)
+			state.addChannel(ChannelType.ControlGroup, cg)
+			return state.getMute(ChannelType.ControlGroup, cg)
 		},
 		unsubscribe: (feedback) => {
-			state.removeChannel('cg', feedback.options.cg)
+			state.removeChannel(ChannelType.ControlGroup, feedback.options.cg)
 		}
 	}
 
@@ -133,7 +113,7 @@ export function getFeedbacks(state) {
 		callback: (feedback, bank) => {
 			state.addChannel(ChannelType.Input, feedback.options.input)
 			state.addSend(ChannelType.Input, feedback.options.input, feedback.options.zone)
-			return state.getSendMute('intput', feedback.options.input, feedback.options.zone)
+			return state.getSendMute(ChannelType.Input, feedback.options.input, feedback.options.zone)
 		},
 		unsubscribe: (feedback) => {
 			state.removeSend(ChannelType.Input, feedback.options.input, feedback.options.zone)
