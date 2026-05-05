@@ -11,6 +11,7 @@ import { dbu_Values,
 	ChannelType,
 	SendType
  } from './src/utility/constants.js'
+import { setLevelCallback, incDecLevelCallback, incDecSendLevelCallback } from './src/utility/formatHexMIDI.js'
 import { requestLevelInfo, requestMuteInfo } from './src/utility/formatHexMIDI.js'
 
 const PRESET_COUNT = 500
@@ -104,80 +105,6 @@ function playbackChannelOptions(name) {
 	]
 }
 
-// action: action of callback
-// type: 0 for input, 1 for zone
-async function setLevelCallback(action, type) {
-	if (checkIfValueOfEnum(type, ChannelType) == false) {
-		return
-	}
-
-	let typeCodeSetLevel = parseInt(0xb0 + type) // type code for Command "Channel Level"
-	let typeCodeGetLevel = parseInt(0x00 + type) // type code for Command "Get Channel Level"
-	let chNumber = parseInt(action.options.setlvl_ch_number)
-	let levelDec = parseInt(action.options.level)
-
-	return [
-		Buffer.from([typeCodeSetLevel, 0x63, chNumber, typeCodeSetLevel, 0x62, 0x17, typeCodeSetLevel, 0x06, levelDec]),
-	]
-}
-
-async function incDecLevelCallback(action, type) {
-	if (checkIfValueOfEnum(type, ChannelType) == false) {
-		return
-	}
-
-	let typeCodeSetLevel = parseInt(0xb0 + type) // type code for Command "Level Increment / Decrement"
-	let typeCodeGetLevel = parseInt(0x00 + type) // type code for Command "Get Channel Level"
-	let chNumber = parseInt(action.options.incdec_ch_number)
-	let incdecSelector = action.options.incdec == 'inc' ? 0x7f : 0x3f
-
-	return [
-		Buffer.from([
-			typeCodeSetLevel,
-			0x63,
-			chNumber,
-			typeCodeSetLevel,
-			0x62,
-			0x20,
-			typeCodeSetLevel,
-			0x06,
-			incdecSelector,
-		]),
-	]
-}
-
-async function incDecSendLevelCallback(action, type) {
-	if (checkIfValueOfEnum(type, SendType) == false) {
-		return
-	}
-
-	let chType = getChTypeOfSendType(type)
-	let sendChType = getSendChTypeOfSendType(type)
-	let chNumber = parseInt(action.options.incdec_ch_number)
-	let sendChNumber = parseInt(action.options.number)
-	let incdecSelector = action.options.incdec == 'inc' ? 0x7f : 0x3f
-
-	return [
-		Buffer.from([
-			0xf0,
-			0x00,
-			0x00,
-			0x1a,
-			0x50,
-			0x12,
-			0x01,
-			0x00,
-			chType,
-			0x04,
-			chNumber,
-			sendChType,
-			sendChNumber,
-			incdecSelector,
-			0xf7,
-		]),
-	]
-}
-
 export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { companion }) {
 	let actions = {}
 
@@ -264,7 +191,7 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 
 	actions['input_to_zone'] = {
 		name: 'Mute Input to Zone',
-		options: muteOptions(ChannelType.Input, numberOfInputs, -1).concat(
+		options: muteOptions('Input', numberOfInputs, -1).concat(
 			listOptions('Zone', numberOfZones, -1),
 		),
 		callback: (action) => {

@@ -29,6 +29,7 @@ export function pollStateTimer(
             let req
 
             for (const i of inputs) {
+                console.log('polling for input ', i)
                 req = requestLevelInfo(ChannelType.Input, i)
                 socket.send(req)
                 await sleep(150)

@@ -117,11 +117,9 @@ export function trackAHMParams() {
      * @param {Boolean} mute 
      */
     function setSend(type, idFrom, idTo, level, mute) {
-        const send = trackedChannels[type].get(idFrom)?.sends.get(idTo)
-        if (!send) {
-            addSend(type, idFrom, idTo)
-            send = trackedChannels[type].get(idFrom)?.sends.get(idTo)
-        }
+        const channel = trackedChannels[type].get(idFrom)
+        const send = channel?.sends?.get(idTo)
+        if (!send) return
 
         if (level !== undefined) send.level = level
         if (mute !== undefined) send.mute = mute

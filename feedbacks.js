@@ -5,8 +5,8 @@ export function getFeedbacks(state) {
 
 	feedbacks['inputMute'] = {
 		type: 'boolean',
-		name: 'Change background when input on mute',
-		description: 'When you mute the input change color',
+		name: 'Input Mute',
+		description: 'Change background when input on mute',
 		defaultStyle: {
 			color: Colors.White,
 			bgcolor: Colors.Red,
@@ -38,8 +38,8 @@ export function getFeedbacks(state) {
 
 	feedbacks['zoneMute'] = {
 		type: 'boolean',
-		name: 'Change background when zone on mute',
-		description: 'When you mute the zone change color',
+		name: 'Zone Mute',
+		description: 'Change background when zone on mute',
 		defaultStyle: {
 			color: Colors.White,
 			bgcolor: Colors.Red,
@@ -68,8 +68,8 @@ export function getFeedbacks(state) {
 
 	feedbacks['cgMute'] = {
 		type: 'boolean',
-		name: 'Change background when control group on mute',
-		description: 'When you mute the control group change color',
+		name: 'Control Group Mute',
+		description: 'Change background when control group on mute',
 		defaultStyle: {
 			color: Colors.White,
 			bgcolor: Colors.Red,
@@ -98,8 +98,8 @@ export function getFeedbacks(state) {
 
 	feedbacks['inputToZoneMute'] = {
 		type: 'boolean',
-		name: 'Change background when input to zone on mute',
-		description: 'When you mute the input on a zone change color',
+		name: 'Input to Zone - Mute',
+		description: 'Change background when input to zone on mute',
 		defaultStyle: {
 			color: Colors.White,
 			bgcolor: Colors.Red,
@@ -119,19 +119,26 @@ export function getFeedbacks(state) {
 			},
 		],
 		callback: (feedback, bank) => {
-			state.addChannel(ChannelType.Input, feedback.options.input)
-			state.addSend(ChannelType.Input, feedback.options.input, feedback.options.zone)
-			return state.getSendMute(ChannelType.Input, feedback.options.input, feedback.options.zone)
+			let input = parseInt(feedback.options.input)
+			let zone = parseInt(feedback.options.zone)
+			if (!state.hasTrackedChannel(ChannelType.Input, input)) {
+				state.addChannel(ChannelType.Input, input)
+			}
+
+			state.addSend(ChannelType.Input, input, zone)
+			return state.getSendMute(ChannelType.Input, input, zone)
 		},
 		unsubscribe: (feedback) => {
-			state.removeSend(ChannelType.Input, feedback.options.input, feedback.options.zone)
+			let input = parseInt(feedback.options.input)
+			let zone = parseInt(feedback.options.zone)
+			state.removeSend(ChannelType.Input, input, zone)
 		},
 	}
 
 	feedbacks['currentPreset'] = {
 		type: 'boolean',
 		name: 'Active Preset',
-		description: 'Reacts when a specific preset has been recalled',
+		description: 'Feedback when a specific preset has been recalled',
 		defaultStyle: {
 			color: Colors.White,
 			bgcolor: Colors.Blue,
