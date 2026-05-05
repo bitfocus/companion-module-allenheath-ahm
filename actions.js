@@ -186,6 +186,7 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 		options: muteOptions('Input', numberOfInputs, -1),
 		callback: async (action) => {
 			let inputNumber = parseInt(action.options.mute_number)
+			console.log('Send mute command -- Input: ', action.options.mute_number, action.options.mute)
 			let buffers = [Buffer.from([0x90, inputNumber, action.options.mute ? 0x7f : 0x3f, 0x90, inputNumber, 0])]
 			tcpClient.send(buffers)
 			await sleep(150)
@@ -205,7 +206,7 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 		options: muteOptions('Zone', numberOfInputs, -1),
 		callback: async (action) => {
 			let zoneNumber = parseInt(action.options.mute_number)
-			let mute = action.options.mute
+			console.log('Send mute command -- Input: ', action.options.mute_number, action.options.mute)
 			let buffers = [Buffer.from([0x91, zoneNumber, action.options.mute ? 0x7f : 0x3f, 0x91, zoneNumber, 0])]
 			tcpClient.send(buffers)
 			await sleep(150)
@@ -215,7 +216,8 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 			tcpClient.send(buffers)
 
 			await sleep(150)
-			state.setChannel(ChannelType.Zone, zoneNumber, undefined, mute)
+			// state.setChannel(ChannelType.Zone, zoneNumber, undefined, mute)
+			console.log('checking feedback zoneMute')
 			companion.checkFeedbacks('zoneMute')
 		},
 	}
@@ -400,7 +402,7 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 			tcpClient.send(buffers)
 
 			await sleep(150)
-			state.setChannel(ChannelType.ControlGroup, cgNumber, undefined, mute)
+			// state.setChannel(ChannelType.ControlGroup, cgNumber, undefined, mute)
 			companion.checkFeedbacks('cgMute')
 		},
 	}

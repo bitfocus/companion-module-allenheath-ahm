@@ -9,6 +9,7 @@ import { ChannelType, SendType } from "./constants.js"
  */
 export function requestLevelInfo(chType, chNumber) {
     if (checkIfValueOfEnum(chType, ChannelType) == false) return 
+    console.log('requested channel', chNumber, 'outputting channel', chNumber-1)
 
     return [
         Buffer.from([

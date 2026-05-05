@@ -47,8 +47,7 @@ export function trackAHMParams() {
     function setChannel(type, id, level, mute) {
         let channel = trackedChannels[type]?.get(id)
         if (!trackedChannels[type].has(id)) {
-            addChannel(type, id)
-            channel = trackedChannels[type]?.get(id)
+            return
         }
 
         if (level !== undefined) channel.level = level

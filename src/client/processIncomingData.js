@@ -99,6 +99,7 @@ export function processIncomingData(data, {companion}, state) {
         // first value of hex:90, hex:91, or hex:92 means mute of some kind
         let mute
         let channel = parseInt(data[1]) + 1
+        console.log('INCOMING MUTE DATA:', data[0], channel)
 
         switch (data[2]) {
             case 127:
@@ -116,7 +117,7 @@ export function processIncomingData(data, {companion}, state) {
             state.setChannel(ChannelType.Input, channel, undefined, mute)
 
             companion.checkFeedbacks('inputMute')
-            console.log('FINAL STATE', state.getMute(ChannelType.Input, channel))
+            console.log('FINAL STATE', state.getMute(ChannelType.Input, channel), channel)
             return
         }
         if (data[0] === 0x91) {

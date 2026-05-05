@@ -53,12 +53,16 @@ export function getFeedbacks(state) {
 			},
 		],
 		callback: (feedback, bank) => {
-			let zone = feedback.options.zone
-			state.addChannel(ChannelType.Zone, zone)
+			let zone = parseInt(feedback.options.zone)
+			if (!state.hasTrackedChannel(ChannelType.Zone, zone)) {
+				state.addChannel(ChannelType.Zone, zone)
+			}
+			
 			return state.getMute(ChannelType.Zone, zone)
 		},
 		unsubscribe: (feedback) => {
-			state.removeChannel(ChannelType.Zone, feedback.options.zone)
+			let zone = parseInt(feedback.options.zone)
+			state.removeChannel(ChannelType.Zone, zone)
 		}
 	}
 
@@ -79,12 +83,16 @@ export function getFeedbacks(state) {
 			},
 		],
 		callback: (feedback, bank) => {
-			let cg = feedback.options.cg
-			state.addChannel(ChannelType.ControlGroup, cg)
+			let cg = parseInt(feedback.options.cg)
+			if (!state.hasTrackedChannel(ChannelType.ControlGroup, cg)) {
+				state.addChannel(ChannelType.ControlGroup, cg)
+			}
+			
 			return state.getMute(ChannelType.ControlGroup, cg)
 		},
 		unsubscribe: (feedback) => {
-			state.removeChannel(ChannelType.ControlGroup, feedback.options.cg)
+			let cg = parseInt(feedback.options.cg)
+			state.removeChannel(ChannelType.ControlGroup, cg)
 		}
 	}
 
