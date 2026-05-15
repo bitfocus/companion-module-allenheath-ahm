@@ -4,7 +4,7 @@ import { sleep } from "../utility/helpers.js"
 
 export function TCPClient({companion}, state) {
     let midiSocket
-    let txQueue
+    let txQueue = []
     let queueRunning = false
 
     function destroy() {
@@ -53,6 +53,7 @@ export function TCPClient({companion}, state) {
         queueRunning = true
 
         while (txQueue.length > 0) {
+            console.log('txQueue: ', txQueue)
             const txBuffer = txQueue.shift()
             if (!txBuffer) continue
 
@@ -61,9 +62,11 @@ export function TCPClient({companion}, state) {
             } catch (e) {
                 companion.log('error', 'Buffer sending error: ' + e)
             }
+
+            await sleep(150)
         }
 
-        await sleep(150)
+        queueRunning = false
     }
 
     function send(buffers) {
