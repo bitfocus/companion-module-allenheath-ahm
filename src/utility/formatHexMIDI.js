@@ -1,5 +1,5 @@
 import { checkIfValueOfEnum, getChTypeOfSendType, getSendChTypeOfSendType } from "./helpers.js"
-import { ChannelType, SendType } from "./constants.js"
+import { ChannelType, SendInfoType, SendType } from "./constants.js"
 
 /**
  * Requests channel level
@@ -61,20 +61,22 @@ export function requestMuteInfo(chType, chNumber) {
 
 /**
  * Requests if input send to zone is muted
- * @param {*} sendType 
+ * @param {ChannelType} sendType 
+ * @param {SendInfoType} infoType
  * @param {String} chNumber 
  * @param {String} sendChNumber 
  * @returns { Buffer } Formulated command buffer
  */
-export function requestSendMuteInfo(sendType, chNumber, sendChNumber) {
-    if (checkIfValueOfEnum(sendType, SendType) == false) return
+export function requestSendInfo(sendType, infoType, chNumber, sendChNumber) {
+    if (checkIfValueOfEnum(sendType, ChannelType) == false) return
+    if (checkIfValueOfEnum(infoType, SendInfoType) == false) return
 
     // get types of send
     let chType = getChTypeOfSendType(sendType)
     let sendChType = getSendChTypeOfSendType(sendType)
 
     console.log(
-        `requestSendMuteInfo: chType: ${chType}, ch: ${chNumber}, sendChType: ${sendChType}, sendChNumber: ${sendChNumber}`,
+        `requestSendInfo ${infoType}: chType: ${chType}, ch: ${chNumber}, sendChType: ${sendChType}, sendChNumber: ${sendChNumber}`,
     )
 
     return [
@@ -90,7 +92,7 @@ export function requestSendMuteInfo(sendType, chNumber, sendChNumber) {
             parseInt(chType),
             0x01,
             0x0f,
-            0x03,
+            parseInt(infoType, 16),
             parseInt(chNumber) - 1,
             parseInt(sendChType),
             parseInt(sendChNumber) - 1,

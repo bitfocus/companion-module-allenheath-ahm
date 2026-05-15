@@ -125,14 +125,13 @@ export function trackAHMParams() {
     }
 
     /**
-     * Get list of tracked sends for a specific channel
+     * Get list of tracked sends for a specific channel type
      * @param {ChannelType} type - ChannelType (Input or Zone)
-     * @param {Number} id - channel number
+     * @param {Number} idFrom 
      * @returns {Number[]} Array of tracked sends for specified channel
      */
-    function getTrackedSends(type, id) {
-        const sends = trackedSends[type].get(id)
-        return [...sends.keys()]
+    function getTrackedSends(type, idFrom) {
+        return [...(trackedSends[type]?.get(idFrom)?.values() ?? [])]
     }
 
     /**

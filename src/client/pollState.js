@@ -1,6 +1,6 @@
-import { ChannelType } from "../utility/constants.js"
+import { ChannelType, SendInfoType } from "../utility/constants.js"
 import { sleep } from "../utility/helpers.js"
-import { requestLevelInfo, requestMuteInfo } from "../utility/formatHexMIDI.js"
+import { requestLevelInfo, requestMuteInfo, requestSendInfo } from "../utility/formatHexMIDI.js"
 
 export function pollStateTimer(
     socket,
@@ -23,6 +23,8 @@ export function pollStateTimer(
             let inputs = state.getTrackedChannels(ChannelType.Input)
             let zones = state.getTrackedChannels(ChannelType.Zone)
             let cgs = state.getTrackedChannels(ChannelType.ControlGroup)
+            let inputSends = state.getTrackedSends(ChannelType.Input)
+            let zoneSends = state.getTrackedSends(ChannelType.Zone)
 
             console.log(inputs.length, zones.length, cgs.length, Date.now())
 
@@ -30,33 +32,33 @@ export function pollStateTimer(
 
             for (const i of inputs) {
                 console.log('polling for input ', i)
-                req = requestLevelInfo(ChannelType.Input, i)
-                socket.send(req)
+                socket.send(requestLevelInfo(ChannelType.Input, i))
                 await sleep(150)
 
-                req = requestMuteInfo(ChannelType.Input, i)
-                socket.send(req)
+                socket.send(requestMuteInfo(ChannelType.Input, i))
                 await sleep(150)
             }
 
             for (const z of zones) {
-                req = requestLevelInfo(ChannelType.Zone, z)
-                socket.send(req)
+                socket.send(requestLevelInfo(ChannelType.Zone, z))
                 await sleep(150)
 
-                req = requestMuteInfo(ChannelType.Zone, z)
-                socket.send(req)
+                socket.send(requestMuteInfo(ChannelType.Zone, z))
                 await sleep(150)
             }
 
             for (const c of cgs) {
-                req = requestLevelInfo(ChannelType.ControlGroup, c)
-                socket.send(req)
+                socket.send(requestLevelInfo(ChannelType.ControlGroup, c))
                 await sleep(150)
 
-                req = requestMuteInfo(ChannelType.ControlGroup, c)
-                socket.send(req)
+                socket.send(requestMuteInfo(ChannelType.ControlGroup, c))
                 await sleep(150)
+            }
+
+            for (const sendFrom of inputSends) {
+                console.log('sendfrom', sendFrom)
+                // let sendCh = isend.
+                // socket.send(requestSendInfo(ChannelType.Input, SendInfoType.LEVEL, ))
             }
 
         } catch (err) {

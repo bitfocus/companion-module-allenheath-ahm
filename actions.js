@@ -9,9 +9,10 @@ import { getChoicesArrayWithIncrementingNumbers,
 import { dbu_Values,
 	PlaybackChannel,
 	ChannelType,
-	SendType
+	SendType,
+	SendInfoType
  } from './src/utility/constants.js'
-import { setLevelCallback, incDecLevelCallback, incDecSendLevelCallback } from './src/utility/formatHexMIDI.js'
+import { setLevelCallback, incDecLevelCallback, incDecSendLevelCallback, requestSendInfo } from './src/utility/formatHexMIDI.js'
 import { requestLevelInfo, requestMuteInfo } from './src/utility/formatHexMIDI.js'
 
 const PRESET_COUNT = 500
@@ -194,7 +195,7 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 		options: muteOptions('Input', numberOfInputs, -1).concat(
 			listOptions('Zone', numberOfZones, -1),
 		),
-		callback: (action) => {
+		callback: async (action) => {
 			let inputNumber = parseInt(action.options.mute_number)
 			let zoneNumber = parseInt(action.options.number)
 
@@ -221,7 +222,10 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 
 			// manually update internal state
             state.setSend(ChannelType.Input, inputNumber, zoneNumber, undefined, action.options.mute)
-
+			await sleep(150)
+			console.log(inputNumber, zoneNumber, SendInfoType.MUTE)
+			tcpClient.send(requestSendInfo(ChannelType.Input, SendInfoType.MUTE, inputNumber, zoneNumber))
+			await sleep(150)
 			companion.checkFeedbacks('inputToZoneMute')
 		},
 	}

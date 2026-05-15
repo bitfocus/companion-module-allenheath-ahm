@@ -1,8 +1,11 @@
 import { TCPHelper, InstanceStatus } from "@companion-module/base"
 import { parseResponse } from "./parseResponse.js"
+import { sleep } from "../utility/helpers.js"
 
 export function TCPClient({companion}, state) {
     let midiSocket
+    let txQueue
+    let queueRunning = false
 
     function destroy() {
         if (!midiSocket) return
@@ -38,20 +41,46 @@ export function TCPClient({companion}, state) {
         })
     }
 
+    function queue(buffers) {
+        txQueue.push(buffers)
+
+        startQueue()
+    }
+
+    async function startQueue() {
+        // if queue is already running, let it be
+        if (queueRunning) return
+        queueRunning = true
+
+        while (txQueue.length > 0) {
+            const txBuffer = txQueue.shift()
+            if (!txBuffer) continue
+
+            try {
+                send(txBuffer)
+            } catch (e) {
+                companion.log('error', 'Buffer sending error: ' + e)
+            }
+        }
+
+        await sleep(150)
+    }
+
     function send(buffers) {
         if (buffers.length !== 0) {
             for (let i = 0; i < buffers.length; i++) {
                 if (!midiSocket) return
                 companion.log('debug', `sending ${buffers[i].toString('hex')} via MIDI TCP`)
                 midiSocket.send(buffers[i])
-                }
             }
         }
+    }
 
     return {
         destroy,
         init,
-        send
+        send,
+        queue
     }
 
 }

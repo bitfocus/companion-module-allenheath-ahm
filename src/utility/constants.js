@@ -151,6 +151,18 @@ export const SendType = {
 	ZoneToZone: 0x11, // 0b 00010001
 }
 
+/**
+ * What info to request from a send? LEVEL or MUTE
+ */
+export const SendInfoType = {
+	LEVEL: 0x02,
+	MUTE: 0x03
+}
+
+/**
+ * @typedef {typeof SendInfoType[keyof typeof SendInfoType]} SendInfoType
+ */
+
 // Types of feedbacks to monitor (e.g. poll or update on connect)
 export const MonitoredFeedbackType = {
 	Undefined: 0,
