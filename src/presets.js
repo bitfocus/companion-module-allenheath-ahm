@@ -1,4 +1,4 @@
-import { Colors } from './src/utility/constants.js'
+import { Colors } from './utility/constants.js'
 
 export function getPresets(numberOfInputs, numberOfZones) {
 	let presets = []

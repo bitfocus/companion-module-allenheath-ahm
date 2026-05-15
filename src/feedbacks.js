@@ -1,5 +1,5 @@
-import { Colors, SendType, MonitoredFeedbackType, ChannelType } from './src/utility/constants.js'
-import { getDbuValue } from './src/utility/helpers.js'
+import { Colors, SendType, MonitoredFeedbackType, ChannelType } from './utility/constants.js'
+import { getDbuValue } from './utility/helpers.js'
 
 export function getFeedbacks(state) {
 	const feedbacks = {}

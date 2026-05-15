@@ -5,15 +5,15 @@ import { getChoicesArrayWithIncrementingNumbers,
 	getChTypeOfSendType,
 	getSendChTypeOfSendType,
 	sleep
- } from './src/utility/helpers.js'
+ } from './utility/helpers.js'
 import { dbu_Values,
 	PlaybackChannel,
 	ChannelType,
 	SendType,
 	SendInfoType
- } from './src/utility/constants.js'
-import { setLevelCallback, incDecLevelCallback, incDecSendLevelCallback, requestSendInfo } from './src/utility/formatHexMIDI.js'
-import { requestLevelInfo, requestMuteInfo } from './src/utility/formatHexMIDI.js'
+ } from './utility/constants.js'
+import { setLevelCallback, incDecLevelCallback, incDecSendLevelCallback, requestSendInfo } from './utility/formatHexMIDI.js'
+import { requestLevelInfo, requestMuteInfo } from './utility/formatHexMIDI.js'
 
 const PRESET_COUNT = 500
 const PLAYBACK_COUNT = 127
