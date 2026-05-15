@@ -49,61 +49,57 @@ export function processIncomingData(data, {companion}, state) {
 
     if (data[1] === 0x63 && data[3] === 0x62) {
         // second value of hex:63 and fourth value of hex:62 means level data
+
+        // Data shared across all channel types:
+        let channel = parseInt(data[2]) + 1
+        let level = parseInt(data[6])
+
         if (data[0] === 0xB0) {
             // first value of hex:b0 means channel level data
-
-            let inputLvlChangeNum = parseInt(data[2]) + 1
-            let levelInput = parseInt(data[6])
-            let variableNameInput = getVarNameInputLevel(inputLvlChangeNum)
+            let variableNameInput = getVarNameInputLevel(channel)
 
             companion.log(
                 'debug',
-                `Input ${inputLvlChangeNum} has new level: ${levelInput} (dec) = ${getDbuValue(levelInput)} (dBu), changing variable ${variableNameInput}`,
+                `Input ${channel} has new level: ${level} (dec) = ${getDbuValue(level)} (dBu), changing variable ${variableNameInput}`,
             )
 
             // Put value in state store if it's being tracked
-            state.setChannel(ChannelType.Input, inputLvlChangeNum, levelInput, undefined)
+            state.setChannel(ChannelType.Input, channel, level, undefined)
 
-            companion.setVariableValues({ [variableNameInput]: getDbuValue(levelInput) })
-
+            companion.setVariableValues({ [variableNameInput]: getDbuValue(level) })
+            companion.checkFeedbacks('inputLevel')
             return
         }
         if (data[0] === 0xB1) {
             // first value of hex:b1 means zone level data
-
-            let zoneLvlChangeNum = parseInt(data[2]) + 1
-            let levelZone = parseInt(data[6])
-            let variableNameZone = getVarNameZoneLevel(zoneLvlChangeNum)
+            let variableNameZone = getVarNameZoneLevel(channel)
 
             companion.log(
                 'debug',
-                `Zone ${zoneLvlChangeNum} has new level: ${levelZone} (dec) = ${getDbuValue(levelZone)} (dBu), changing variable ${variableNameZone}`,
+                `Zone ${channel} has new level: ${level} (dec) = ${getDbuValue(level)} (dBu), changing variable ${variableNameZone}`,
             )
 
             // Put value in state store if it's being tracked
-            state.setChannel(ChannelType.Zone, zoneLvlChangeNum, levelZone, undefined)
+            state.setChannel(ChannelType.Zone, channel, level, undefined)
 
-            companion.setVariableValues({ [variableNameZone]: getDbuValue(levelZone) })
-
+            companion.setVariableValues({ [variableNameZone]: getDbuValue(level) })
+            companion.checkFeedbacks('zoneLevel')
             return
         }
         if (data[0] === 0xB2) {
             // first value of hex:b2 means control group level data
-
-            let cgLvlChangeNum = parseInt(data[2]) + 1
-            let levelCG = parseInt(data[6])
-            let variableNameCG = getVarNameCGLevel(cgLvlChangeNum)
+            let variableNameCG = getVarNameCGLevel(channel)
 
             companion.log(
                 'debug',
-                `Control Group ${cgLvlChangeNum} has new level: ${levelCG} (dec) = ${getDbuValue(levelCG)} (dBu), changing variable ${variableNameCG}`,
+                `Control Group ${channel} has new level: ${level} (dec) = ${getDbuValue(level)} (dBu), changing variable ${variableNameCG}`,
             )
 
             // Put value in state store if it's being tracked
-            state.setChannel(ChannelType.ControlGroup, cgLvlChangeNum, levelCG, undefined)
+            state.setChannel(ChannelType.ControlGroup, channel, level, undefined)
 
-            companion.setVariableValues({ [variableNameCG]: getDbuValue(levelCG) })
-
+            companion.setVariableValues({ [variableNameCG]: getDbuValue(level) })
+            companion.checkFeedbacks('cgLevel')
             return
         }
     }

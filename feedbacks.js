@@ -1,4 +1,5 @@
 import { Colors, SendType, MonitoredFeedbackType, ChannelType } from './src/utility/constants.js'
+import { getDbuValue } from './src/utility/helpers.js'
 
 export function getFeedbacks(state) {
 	const feedbacks = {}
@@ -36,6 +37,33 @@ export function getFeedbacks(state) {
 		}
 	}
 
+	feedbacks['inputLevel'] = {
+		type: 'value',
+		name: 'Input Level',
+		description: 'Returns level of input in dBu',
+		options: [
+			{
+				type: 'textinput',
+				label: 'Select input',
+				id: 'input',
+				default: 1,
+			},
+		],
+		callback: (feedback, bank) => {
+			let input = parseInt(feedback.options.input)
+			console.log('feedback log', input, feedback.options.input)
+			if (!state.hasTrackedChannel(ChannelType.Input, input)) {
+				state.addChannel(ChannelType.Input, input)
+			}
+			console.log('feedback getLevel ', state.getLevel(ChannelType.Input, input))
+			return getDbuValue(state.getLevel(ChannelType.Input, input))
+		},
+		unsubscribe: (feedback) => {
+			let input = parseInt(feedback.options.input)
+			state.removeChannel(ChannelType.Input, input)
+		}
+	}
+
 	feedbacks['zoneMute'] = {
 		type: 'boolean',
 		name: 'Zone Mute',
@@ -66,6 +94,33 @@ export function getFeedbacks(state) {
 		}
 	}
 
+	feedbacks['zoneLevel'] = {
+		type: 'value',
+		name: 'Zone Level',
+		description: 'Returns level of zone in dBu',
+		options: [
+			{
+				type: 'textinput',
+				label: 'Select zone',
+				id: 'zone',
+				default: 1,
+			},
+		],
+		callback: (feedback, bank) => {
+			let zone = parseInt(feedback.options.zone)
+			console.log('feedback log', zone, feedback.options.zone)
+			if (!state.hasTrackedChannel(ChannelType.Zone, zone)) {
+				state.addChannel(ChannelType.Zone, zone)
+			}
+			console.log('feedback getLevel ', state.getLevel(ChannelType.Zone, zone))
+			return getDbuValue(state.getLevel(ChannelType.Zone, zone))
+		},
+		unsubscribe: (feedback) => {
+			let zone = parseInt(feedback.options.zone)
+			state.removeChannel(ChannelType.Zone, zone)
+		}
+	}
+
 	feedbacks['cgMute'] = {
 		type: 'boolean',
 		name: 'Control Group Mute',
@@ -89,6 +144,33 @@ export function getFeedbacks(state) {
 			}
 			
 			return state.getMute(ChannelType.ControlGroup, cg)
+		},
+		unsubscribe: (feedback) => {
+			let cg = parseInt(feedback.options.cg)
+			state.removeChannel(ChannelType.ControlGroup, cg)
+		}
+	}
+
+	feedbacks['cgLevel'] = {
+		type: 'value',
+		name: 'Control Group Level',
+		description: 'Returns level of control group in dBu',
+		options: [
+			{
+				type: 'textinput',
+				label: 'Select control group',
+				id: 'cg',
+				default: 1,
+			},
+		],
+		callback: (feedback, bank) => {
+			let cg = parseInt(feedback.options.cg)
+			console.log('feedback log', cg, feedback.options.cg)
+			if (!state.hasTrackedChannel(ChannelType.ControlGroup, cg)) {
+				state.addChannel(ChannelType.ControlGroup, cg)
+			}
+			console.log('feedback getLevel ', state.getLevel(ChannelType.ControlGroup, cg))
+			return getDbuValue(state.getLevel(ChannelType.ControlGroup, cg))
 		},
 		unsubscribe: (feedback) => {
 			let cg = parseInt(feedback.options.cg)

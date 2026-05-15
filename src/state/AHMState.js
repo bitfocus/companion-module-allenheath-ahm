@@ -143,7 +143,9 @@ export function trackAHMParams() {
      * @returns {String} Level of channel in dBu
      */
     function getLevel(type, id) {
+        console.log('GET INSTANCE', trackedChannels)
         const reqLevelObject = trackedChannels[type].get(id)
+        console.log('getLevel', reqLevelObject.level)
         return reqLevelObject.level
     }
 
@@ -154,7 +156,6 @@ export function trackAHMParams() {
      * @returns {Boolean} Mute status of channel
      */
     function getMute(type, id) {
-        console.log('GET INSTANCE', trackedChannels)
         return trackedChannels[type]?.get(id)?.mute ?? false
     }
 
