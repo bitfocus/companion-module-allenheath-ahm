@@ -10,6 +10,10 @@ export function trackAHMParams() {
         [ChannelType.Zone]: new Map(),
         [ChannelType.ControlGroup]: new Map(),
     }
+    const trackedSends = {
+        [ChannelType.Input]: new Map(),
+        [ChannelType.Zone]: new Map()
+    }
     let lastPreset = 0
 
     /**
@@ -23,7 +27,6 @@ export function trackAHMParams() {
         trackedChannels[type].set(id, {
             level: '-inf',
             mute: false,
-            sends: new Map()
         })
     }
 
@@ -78,74 +81,78 @@ export function trackAHMParams() {
 
     /**
      * Adds an input or zone send to be tracked
-     * @param {ChannelType} type - ChannelType (Input, Zone, or ControlGroup)
+     * @param {ChannelType} type - ChannelType (Input or Zone)
      * @param {Number} idFrom 
      * @param {Number} idTo 
      */
     function addSend(type, idFrom, idTo) {
-        const channel = trackedChannels[type]?.get(idFrom)
-        if (!channel) {
-            addChannel(type, idFrom)
-            channel = trackedChannels[type]?.get(idFrom)
-        }
+        if (trackedSends[type]?.has(idFrom)) return
 
-        channel.sends.set(idTo, {
+        trackedSends[type].set(idFrom, {
+            channel: idTo,
             level: '-inf',
-            mute: false
+            mute: false,
         })
     }
 
     /**
      * Removed an input or zone send from tracking
-     * @param {ChannelType} type - ChannelType (Input, Zone, or ControlGroup)
-     * @param {Number} idFrom 
+     * @param {ChannelType} typeFrom - ChannelType (Input or Zone)
+     * @param {Number} idFrom
      * @param {Number} idTo 
      */
     function removeSend(type, idFrom, idTo) {
-        const channel = trackedChannels[type].get(idFrom)
-        if (!channel) return
+        const send = trackedSends[type]?.get(idFrom)
+        if (!send) return
 
-        channel.sends.delete(idTo)
+        send.delete(idTo)
     }
 
     /**
      * Updates send information in tracked channels
-     * @param {ChannelType} type - ChannelType (Input, Zone, or ControlGroup)
+     * @param {ChannelType} type - ChannelType (Input or Zone)
      * @param {Number} idFrom 
      * @param {Number} idTo 
      * @param {String} level 
      * @param {Boolean} mute 
      */
     function setSend(type, idFrom, idTo, level, mute) {
-        const channel = trackedChannels[type].get(idFrom)
-        const send = channel?.sends?.get(idTo)
+        const send = trackedSends[type]?.get(idFrom)
         if (!send) return
-
+        idTo = send.channel
         if (level !== undefined) send.level = level
         if (mute !== undefined) send.mute = mute
     }
 
     /**
      * Get list of tracked sends for a specific channel
-     * @param {ChannelType} type - ChannelType (Input, Zone, or ControlGroup)
+     * @param {ChannelType} type - ChannelType (Input or Zone)
      * @param {Number} id - channel number
      * @returns {Number[]} Array of tracked sends for specified channel
      */
     function getTrackedSends(type, id) {
-        const channel = trackedChannels[type].get(id)
-        return [...channel.sends.keys()]
+        const sends = trackedSends[type].get(id)
+        return [...sends.keys()]
+    }
+
+    /**
+     * Checks to see if tracked send for a specific channel is in AHM state
+     * @param {ChannelType} type - ChannelType (Input or Zone)
+     * @param {Number} id - channel id
+     * @returns {Boolean} - True/False if tracked channel exists in state
+     */
+    function hasTrackedSend(type, idFrom, idTo) {
+        return trackedSends[type]?.has(idFrom)
     }
 
     /**
      * Get level of channel from tracked channels
-     * @param {ChannelType} type - ChannelType (Input, Zone, or ControlGroup)
+     * @param {ChannelType} type - ChannelType (Input or Zone)
      * @param {Number} id - channel number
-     * @returns {String} Level of channel in dBu
+     * @returns {Number} Level of channel as integer from API guide
      */
     function getLevel(type, id) {
-        console.log('GET INSTANCE', trackedChannels)
         const reqLevelObject = trackedChannels[type].get(id)
-        console.log('getLevel', reqLevelObject.level)
         return reqLevelObject.level
     }
 
@@ -163,10 +170,11 @@ export function trackAHMParams() {
      * Get level of channel send from tracked channels
      * @param {ChannelType} type - ChannelType (Input, Zone, or ControlGroup)
      * @param {Number} id - channel number
-     * @returns {String} Level of channel in dBu
+     * @returns {Number} Level of channel as integer from API guide
      */
     function getSendLevel(type, idfrom, idTo) {
-        const send = trackedChannels[type].get(idFrom)?.sends.get(idTo)
+        const send = trackedSends[type].get(idTo)
+        console.log('GET SEND INSTANCE', send)
         if (!send) return
 
         return send.level
@@ -179,7 +187,8 @@ export function trackAHMParams() {
      * @returns {Boolean} Mute status of channel
      */
     function getSendMute(type, idFrom, idTo) {
-        const send = trackedChannels[type].get(idFrom)?.sends.get(idTo)
+        const send = trackedSends[type].get(idTo)
+        console.log('GET SEND INSTANCE', send)
         if (!send) return
 
         return send.mute
@@ -211,6 +220,7 @@ export function trackAHMParams() {
         getTrackedChannels,
         hasTrackedChannel,
         getTrackedSends,
+        hasTrackedSend,
         getLevel,
         getMute,
         getSendLevel,

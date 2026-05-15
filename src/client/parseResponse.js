@@ -4,28 +4,28 @@ import { getVarNameInputLevel,
     getVarNameCGLevel,
     getDbuValue } from "../utility/helpers.js"
 
-export function processIncomingData(data, {companion}, state) {
+export function parseResponse(data, {companion}, state) {
     console.log(data)
 
     if (data[0] === 0xF0) {
         // receiving SysEx data
+
+        // Common data for all channel types:
+        let inputNum = parseInt(data[10]) + 1
+        let zoneNum = parseInt(data[12]) + 1
+
         if (data[9] === 0x02) {
             // receiving send level data
-            let inputNum = parseInt(data[10]) + 1
-            let zoneNum = parseInt(data[12]) + 1
             let level = parseInt(data[13])
 
-
-            state.setSend(ChannelType.Input, inputNum, zoneNum, level, undefined)
+            state.setSend(ChannelType.Input, inputNum, zoneNum, level, undefined)  // log below displays correct data, this line doesn't
             companion.log('debug', `RECIEVED: send level data -- Input ${inputNum} to Zone ${zoneNum} at ${getDbuValue(level)}`)
-            companion.checkFeedbacks('inputToZoneMute')
+            companion.checkFeedbacks('inputToZoneLevel')
             return
         }
 
         if (data[9] === 0x03) {
             // receiving send mute data
-            let inputNum = parseInt(data[10]) + 1
-            let zoneNum = parseInt(data[12]) + 1
             let mute
 
             switch (data[13]) {

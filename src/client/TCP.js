@@ -1,5 +1,5 @@
 import { TCPHelper, InstanceStatus } from "@companion-module/base"
-import { processIncomingData } from "./processIncomingData.js"
+import { parseResponse } from "./parseResponse.js"
 
 export function TCPClient({companion}, state) {
     let midiSocket
@@ -28,7 +28,7 @@ export function TCPClient({companion}, state) {
         })
 
         midiSocket.on('data', (data) => {
-            processIncomingData(data, {companion}, state)
+            parseResponse(data, {companion}, state)
         })
 
         midiSocket.on('connect', () => {

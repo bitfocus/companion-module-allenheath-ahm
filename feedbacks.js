@@ -203,12 +203,57 @@ export function getFeedbacks(state) {
 		callback: (feedback, bank) => {
 			let input = parseInt(feedback.options.input)
 			let zone = parseInt(feedback.options.zone)
+
+			// If channel is not in tracked state, add it
 			if (!state.hasTrackedChannel(ChannelType.Input, input)) {
 				state.addChannel(ChannelType.Input, input)
 			}
+			// If send on specified channel is not in tracked state, add it
+			if (!state.hasTrackedSend(ChannelType.Input, input, zone)) {
+				state.addSend(ChannelType.Input, input, zone)
+			}
 
-			state.addSend(ChannelType.Input, input, zone)
 			return state.getSendMute(ChannelType.Input, input, zone)
+		},
+		unsubscribe: (feedback) => {
+			let input = parseInt(feedback.options.input)
+			let zone = parseInt(feedback.options.zone)
+			state.removeSend(ChannelType.Input, input, zone)
+		},
+	}
+
+	feedbacks['inputToZoneLevel'] = {
+		type: 'value',
+		name: 'Input to Zone - Level',
+		description: 'Returns value of input sent to zone',
+		options: [
+			{
+				type: 'textinput',
+				label: 'Select input',
+				id: 'input',
+				default: 1,
+			},
+			{
+				type: 'textinput',
+				label: 'Select zone',
+				id: 'zone',
+				default: 1,
+			},
+		],
+		callback: (feedback, bank) => {
+			let input = parseInt(feedback.options.input)
+			let zone = parseInt(feedback.options.zone)
+
+			// If channel is not in tracked state, add it
+			if (!state.hasTrackedChannel(ChannelType.Input, input)) {
+				state.addChannel(ChannelType.Input, input)
+			}
+			// If send on specified channel is not in tracked state, add it
+			if (!state.hasTrackedSend(ChannelType.Input, input, zone)) {
+				state.addSend(ChannelType.Input, input, zone)
+			}
+
+			return getDbuValue(state.getSendLevel(ChannelType.Input, input, zone))
 		},
 		unsubscribe: (feedback) => {
 			let input = parseInt(feedback.options.input)
