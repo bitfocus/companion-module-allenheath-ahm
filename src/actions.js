@@ -217,11 +217,10 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 
 			// manually update internal state
             state.setSend(ChannelType.Input, inputNumber, zoneNumber, undefined, action.options.mute)
+			companion.checkFeedbacks('inputToZoneMute')
 			
 			console.log(inputNumber, zoneNumber, SendInfoType.MUTE)
 			tcpClient.queue(requestSendInfo(ChannelType.Input, SendInfoType.MUTE, inputNumber, zoneNumber))
-			
-			companion.checkFeedbacks('inputToZoneMute')
 		},
 	}
 

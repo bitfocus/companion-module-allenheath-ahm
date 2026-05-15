@@ -23,10 +23,9 @@ export function getFeedbacks(state) {
 		callback: (feedback, bank) => {
 			let input = parseInt(feedback.options.input)
 			console.log('feedback log', input, feedback.options.input)
-			if (!state.hasTrackedChannel(ChannelType.Input, input)) {
-				state.addChannel(ChannelType.Input, input)
-			}
 
+			state.addChannel(ChannelType.Input, input)
+			
 			let value = state.getMute(ChannelType.Input, input)
 			console.log('feedback eval:', input, value)
 			return value
@@ -52,9 +51,9 @@ export function getFeedbacks(state) {
 		callback: (feedback, bank) => {
 			let input = parseInt(feedback.options.input)
 			console.log('feedback log', input, feedback.options.input)
-			if (!state.hasTrackedChannel(ChannelType.Input, input)) {
-				state.addChannel(ChannelType.Input, input)
-			}
+
+			state.addChannel(ChannelType.Input, input)
+			
 			console.log('feedback getLevel ', state.getLevel(ChannelType.Input, input))
 			return getDbuValue(state.getLevel(ChannelType.Input, input))
 		},
@@ -82,9 +81,8 @@ export function getFeedbacks(state) {
 		],
 		callback: (feedback, bank) => {
 			let zone = parseInt(feedback.options.zone)
-			if (!state.hasTrackedChannel(ChannelType.Zone, zone)) {
-				state.addChannel(ChannelType.Zone, zone)
-			}
+
+			state.addChannel(ChannelType.Zone, zone)
 			
 			return state.getMute(ChannelType.Zone, zone)
 		},
@@ -109,9 +107,9 @@ export function getFeedbacks(state) {
 		callback: (feedback, bank) => {
 			let zone = parseInt(feedback.options.zone)
 			console.log('feedback log', zone, feedback.options.zone)
-			if (!state.hasTrackedChannel(ChannelType.Zone, zone)) {
-				state.addChannel(ChannelType.Zone, zone)
-			}
+
+			state.addChannel(ChannelType.Zone, zone)
+
 			console.log('feedback getLevel ', state.getLevel(ChannelType.Zone, zone))
 			return getDbuValue(state.getLevel(ChannelType.Zone, zone))
 		},
@@ -139,9 +137,8 @@ export function getFeedbacks(state) {
 		],
 		callback: (feedback, bank) => {
 			let cg = parseInt(feedback.options.cg)
-			if (!state.hasTrackedChannel(ChannelType.ControlGroup, cg)) {
-				state.addChannel(ChannelType.ControlGroup, cg)
-			}
+ 
+			state.addChannel(ChannelType.ControlGroup, cg)
 			
 			return state.getMute(ChannelType.ControlGroup, cg)
 		},
@@ -166,9 +163,9 @@ export function getFeedbacks(state) {
 		callback: (feedback, bank) => {
 			let cg = parseInt(feedback.options.cg)
 			console.log('feedback log', cg, feedback.options.cg)
-			if (!state.hasTrackedChannel(ChannelType.ControlGroup, cg)) {
-				state.addChannel(ChannelType.ControlGroup, cg)
-			}
+
+			state.addChannel(ChannelType.ControlGroup, cg)
+
 			console.log('feedback getLevel ', state.getLevel(ChannelType.ControlGroup, cg))
 			return getDbuValue(state.getLevel(ChannelType.ControlGroup, cg))
 		},
@@ -201,23 +198,16 @@ export function getFeedbacks(state) {
 			},
 		],
 		callback: (feedback, bank) => {
-			let input = parseInt(feedback.options.input)
-			let zone = parseInt(feedback.options.zone)
+			let input = parseInt(feedback.options.input) - 1
+			let zone = parseInt(feedback.options.zone) - 1
 
-			// If channel is not in tracked state, add it
-			if (!state.hasTrackedChannel(ChannelType.Input, input)) {
-				state.addChannel(ChannelType.Input, input)
-			}
-			// If send on specified channel is not in tracked state, add it
-			if (!state.hasTrackedSend(ChannelType.Input, input, zone)) {
-				state.addSend(ChannelType.Input, input, zone)
-			}
+			state.addSend(ChannelType.Input, input, zone)
 
 			return state.getSendMute(ChannelType.Input, input, zone)
 		},
 		unsubscribe: (feedback) => {
-			let input = parseInt(feedback.options.input)
-			let zone = parseInt(feedback.options.zone)
+			let input = parseInt(feedback.options.input) - 1
+			let zone = parseInt(feedback.options.zone) - 1
 			state.removeSend(ChannelType.Input, input, zone)
 		},
 	}
@@ -244,14 +234,7 @@ export function getFeedbacks(state) {
 			let input = parseInt(feedback.options.input)
 			let zone = parseInt(feedback.options.zone)
 
-			// If channel is not in tracked state, add it
-			if (!state.hasTrackedChannel(ChannelType.Input, input)) {
-				state.addChannel(ChannelType.Input, input)
-			}
-			// If send on specified channel is not in tracked state, add it
-			if (!state.hasTrackedSend(ChannelType.Input, input, zone)) {
-				state.addSend(ChannelType.Input, input, zone)
-			}
+			state.addSend(ChannelType.Input, input, zone)
 
 			return getDbuValue(state.getSendLevel(ChannelType.Input, input, zone))
 		},

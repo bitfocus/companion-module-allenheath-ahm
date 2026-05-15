@@ -23,8 +23,8 @@ export function pollStateTimer(
             let inputs = state.getTrackedChannels(ChannelType.Input)
             let zones = state.getTrackedChannels(ChannelType.Zone)
             let cgs = state.getTrackedChannels(ChannelType.ControlGroup)
-            let inputSends = state.getTrackedSends(ChannelType.Input)
-            let zoneSends = state.getTrackedSends(ChannelType.Zone)
+            let inputSends = state.getSendStates(ChannelType.Input)
+            let zoneSends = state.getSendStates(ChannelType.Zone)
 
             console.log(inputs.length, zones.length, cgs.length, Date.now())
 
