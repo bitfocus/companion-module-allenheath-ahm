@@ -51,11 +51,16 @@ class AHMInstance extends InstanceBase {
 			this.AHMState,
 			(err) => console.error("Poller error:", err)
 		)
-		if (this.config.host) {
-			this.pollState.start()
-		}
 
+		// Init TCP connection
 		this.tcpClient.init(this.config.host, MIDI_PORT)
+		// Polling callback hooks
+		this.tcpClient.onConnected(() => {
+			this.pollState.start()
+		})
+		this.tcpClient.onDisconnect(() => {
+			this.pollState.stop()
+		})
 		this.initActions()
 		this.initFeedbacks()
 		this.initPresets()

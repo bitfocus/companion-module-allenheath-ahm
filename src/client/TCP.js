@@ -6,12 +6,16 @@ export function TCPClient({companion}, state) {
     let midiSocket
     let txQueue = []
     let queueRunning = false
+    let isConnected = false
+    let onConnectedCallback
+    let onDisconnectCallback
 
     function destroy() {
         if (!midiSocket) return
 
         midiSocket.destroy()
         midiSocket = undefined
+        isConnected = false
     }
 
     function init(host, port) {
@@ -23,6 +27,12 @@ export function TCPClient({companion}, state) {
 
         midiSocket.on('status_change', (status, message) => {
             companion.updateStatus(status)
+        })
+
+        midiSocket.on('close', () => {
+            if (onDisconnectCallback) {
+                onDisconnectCallback()
+            }
         })
 
         midiSocket.on('error', (err) => {
@@ -37,8 +47,20 @@ export function TCPClient({companion}, state) {
         midiSocket.on('connect', () => {
             companion.log('debug', `MIDI Connected to ${host}`)
             companion.updateStatus(InstanceStatus.Ok)
-            // companion.performReadoutAfterConnected()
+            isConnected = true
+
+            if (onConnectedCallback) {
+                onConnectedCallback()
+            }
         })
+    }
+
+    function onConnected(cb) {
+        onConnectedCallback = cb
+    }
+
+    function onDisconnect(cb) {
+        onDisconnectCallback = cb
     }
 
     function queue(buffers) {
@@ -83,7 +105,10 @@ export function TCPClient({companion}, state) {
         destroy,
         init,
         send,
-        queue
+        queue,
+        isConnected,
+        onConnected,
+        onDisconnect
     }
 
 }
