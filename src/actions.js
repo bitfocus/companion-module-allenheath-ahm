@@ -12,8 +12,7 @@ import { dbu_Values,
 	SendType,
 	SendInfoType
  } from './utility/constants.js'
-import { setLevelCallback, incDecLevelCallback, incDecSendLevelCallback, requestSendInfo } from './utility/formatHexMIDI.js'
-import { requestLevelInfo, requestMuteInfo } from './utility/formatHexMIDI.js'
+import { setLevelCallback, incDecLevelCallback, incDecSendLevelCallback, requestSendInfo, requestLevelInfo, requestMuteInfo } from './utility/formatHexMIDI.js'
 
 const PRESET_COUNT = 500
 const PLAYBACK_COUNT = 127

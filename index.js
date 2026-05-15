@@ -1,7 +1,7 @@
 import { InstanceBase, Regex, runEntrypoint, InstanceStatus } from '@companion-module/base'
 import { getActions } from './src/actions.js'
 import { getPresets } from './src/presets.js'
-import { getVariables } from './variables.js'
+import { getVariables } from './src/variables.js'
 import { getFeedbacks } from './src/feedbacks.js'
 import UpgradeScripts from './src/upgrades.js'
 import { ChannelType, MonitoredFeedbackType  } from './src/utility/constants.js'

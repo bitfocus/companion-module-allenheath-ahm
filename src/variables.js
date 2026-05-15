@@ -1,4 +1,4 @@
-import * as Helpers from './src/utility/helpers.js'
+import * as Helpers from './utility/helpers.js'
 
 export function getVariables(numberOfInputs, numberOfZones) {
 	const variableDefinitions = []
