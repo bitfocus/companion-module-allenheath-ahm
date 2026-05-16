@@ -19,7 +19,7 @@ export function parseResponse(data, {companion}, state) {
             let level = parseInt(data[13])
 
             state.setSend(ChannelType.Input, inputNum, zoneNum, level, undefined)  // log below displays correct data, this line doesn't
-            companion.log('debug', `RECIEVED: send level data -- Input ${inputNum} to Zone ${zoneNum} at ${getDbuValue(level)}`)
+            companion.log('info', `RECIEVED: send level data -- Input ${inputNum} to Zone ${zoneNum} at ${getDbuValue(level)}`)
             companion.checkFeedbacks('inputToZoneLevel')
             return
         }
@@ -40,7 +40,7 @@ export function parseResponse(data, {companion}, state) {
             }
 
             state.setSend(ChannelType.Input, inputNum, zoneNum, undefined, mute)
-            companion.log('debug', `RECIEVED: send mute data -- Input ${inputNum} to Zone ${zoneNum} is ${mute ? 'muted' : 'unmuted'}`)
+            companion.log('info', `RECIEVED: send mute data -- Input ${inputNum} to Zone ${zoneNum} is ${mute ? 'muted' : 'unmuted'}`)
             companion.checkFeedbacks('inputToZoneMute')
             return
         }
@@ -59,7 +59,7 @@ export function parseResponse(data, {companion}, state) {
             let variableNameInput = getVarNameInputLevel(channel)
 
             companion.log(
-                'debug',
+                'info',
                 `Input ${channel} has new level: ${level} (dec) = ${getDbuValue(level)} (dBu), changing variable ${variableNameInput}`,
             )
 
@@ -75,7 +75,7 @@ export function parseResponse(data, {companion}, state) {
             let variableNameZone = getVarNameZoneLevel(channel)
 
             companion.log(
-                'debug',
+                'info',
                 `Zone ${channel} has new level: ${level} (dec) = ${getDbuValue(level)} (dBu), changing variable ${variableNameZone}`,
             )
 
@@ -91,7 +91,7 @@ export function parseResponse(data, {companion}, state) {
             let variableNameCG = getVarNameCGLevel(channel)
 
             companion.log(
-                'debug',
+                'info',
                 `Control Group ${channel} has new level: ${level} (dec) = ${getDbuValue(level)} (dBu), changing variable ${variableNameCG}`,
             )
 
