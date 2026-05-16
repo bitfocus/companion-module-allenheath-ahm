@@ -27,46 +27,16 @@ export function pollStateTimer(
                 throw new Error("Socket is not connected")
             }
 
-            // build list of things to check here
-            let inputs = state.getTrackedChannels(ChannelType.Input)
-            let zones = state.getTrackedChannels(ChannelType.Zone)
-            let cgs = state.getTrackedChannels(ChannelType.ControlGroup)
-            let inputSends = state.getSendStates(ChannelType.Input)
-            let zoneSends = state.getSendStates(ChannelType.Zone)
+            const requests = [
+                ...buildChReqs(ChannelType.Input, state.getTrackedChannelMap(ChannelType.Input)),
+                ...buildChReqs(ChannelType.Zone, state.getTrackedChannelMap(ChannelType.Zone)),
+                ...buildChReqs(ChannelType.ControlGroup, state.getTrackedChannelMap(ChannelType.ControlGroup)),
+                ...buildSendReqs(ChannelType.Input, state.getAllSendStates(ChannelType.Input)),
+                ...buildSendReqs(ChannelType.Zone, state.getAllSendStates(ChannelType.Zone))
+            ]
 
-            console.log(inputs.length, zones.length, cgs.length, Date.now())
-
-            let req
-
-            for (const i of inputs) {
-                console.log('polling for input ', i)
-                socket.send(requestLevelInfo(ChannelType.Input, i))
-                await sleep(150)
-
-                socket.send(requestMuteInfo(ChannelType.Input, i))
-                await sleep(150)
-            }
-
-            for (const z of zones) {
-                socket.send(requestLevelInfo(ChannelType.Zone, z))
-                await sleep(150)
-
-                socket.send(requestMuteInfo(ChannelType.Zone, z))
-                await sleep(150)
-            }
-
-            for (const c of cgs) {
-                socket.send(requestLevelInfo(ChannelType.ControlGroup, c))
-                await sleep(150)
-
-                socket.send(requestMuteInfo(ChannelType.ControlGroup, c))
-                await sleep(150)
-            }
-
-            for (const sendFrom of inputSends) {
-                console.log('sendfrom', sendFrom)
-                // let sendCh = isend.
-                // socket.send(requestSendInfo(ChannelType.Input, SendInfoType.LEVEL, ))
+            for (const req of requests) {
+                socket.queue(req)
             }
 
         } catch (err) {
@@ -74,6 +44,42 @@ export function pollStateTimer(
         }
 
         setTimeout(tick, interval)
+    }
+
+    function buildChReqs(type, ids) {
+        const requests = []
+
+        for (const id of ids) {
+            requests.push(
+                requestLevelInfo(type, id),
+                requestMuteInfo(type, id)
+            )
+        }
+
+        return requests
+    }
+
+    function buildSendReqs(type, sends) {
+        const requests = []
+
+        for (const { idFrom, idTo } of sends) {
+            requests.push(
+                requestSendInfo(
+                    type,
+                    SendInfoType.LEVEL,
+                    idFrom,
+                    idTo
+                ),
+                requestSendInfo(
+                    type,
+                    SendInfoType.MUTE,
+                    idFrom,
+                    idTo
+                )
+            )
+        }
+
+        return requests
     }
 
     function start() {

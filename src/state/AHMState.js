@@ -60,12 +60,12 @@ export function trackAHMParams() {
     }
 
     /**
-     * Get list of tracked channels
+     * Get map of tracked channels
      * @param {ChannelType} type - ChannelType (Input, Zone, or ControlGroup)
-     * @returns {Number[]} Array of tracked channel numbers
+     * @returns {Map} Map of tracked channels by type
      */
-    function getTrackedChannels(type) {
-        return [...(trackedChannels[type]?.keys() ?? [])]
+    function getTrackedChannelMap(type) {
+        return trackedChannels[type]
     }
 
     /**
@@ -118,11 +118,31 @@ export function trackAHMParams() {
     /**
      * Get list of tracked sends for a specific channel type
      * @param {ChannelType} type - ChannelType (Input or Zone)
-     * @param {Number} idFrom 
      * @returns {Number[]} Array of tracked sends for specified channel
      */
-    function getSendStates(type, idFrom) {
-        return [...(trackedChannels[type]?.get(idFrom)?.sends?.values() ?? [])]
+    function getAllSendStates(type) {
+        const results = []
+        const channels = trackedChannels[type]
+        if (!(channels instanceof Map)) {
+            return results
+        }
+
+        console.log('trackedChannels[type]', trackedChannels[type])
+        console.log('isMap', trackedChannels[type] instanceof Map)
+
+        for (const [idFrom, channel] of channels) {
+            if (!(channel.sends instanceof Map)) continue
+
+            for (const [idTo, send] of channel.sends) {
+                results.push({
+                    idFrom,
+                    idTo,
+                    send,
+                })
+            }
+        }
+
+        return results
     }
 
     /**
@@ -200,8 +220,8 @@ export function trackAHMParams() {
         addSend,
         removeSend,
         setSend,
-        getTrackedChannels,
-        getSendStates,
+        getTrackedChannelMap,
+        getAllSendStates,
         getLevel,
         getMute,
         getSendLevel,

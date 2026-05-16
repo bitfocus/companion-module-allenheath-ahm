@@ -60,7 +60,7 @@ export function requestMuteInfo(chType, chNumber) {
 }
 
 /**
- * Requests if input send to zone is muted
+ * Requests either if input send to zone is muted, or returns send level
  * @param {ChannelType} sendType 
  * @param {SendInfoType} infoType
  * @param {String} chNumber 
