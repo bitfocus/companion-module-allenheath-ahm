@@ -1,8 +1,15 @@
-import { TCPHelper, InstanceStatus } from "@companion-module/base"
+import { TCPHelper, InstanceStatus, InstanceBase } from "@companion-module/base"
 import { parseResponse } from "./parseResponse.js"
 import { sleep } from "../utility/helpers.js"
 
-export function TCPClient({companion}, state) {
+/**
+ * TCP Client factory function. Creates TCP client and handles request queueing, sending, and receiving.
+ * @param {InstanceBase} companion 
+ * @param {*} state 
+ * @param {Number} reqTime - Time between queued requests in ms
+ * @returns {Function[]} Returns helper functions
+ */
+export function TCPClient({companion}, state, reqTime) {
     let midiSocket
     let txQueue = []
     let queueRunning = false
@@ -85,7 +92,7 @@ export function TCPClient({companion}, state) {
                 companion.log('error', 'Buffer sending error: ' + e)
             }
 
-            await sleep(150)
+            await sleep(reqTime)
         }
 
         queueRunning = false

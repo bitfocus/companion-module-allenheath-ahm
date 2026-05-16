@@ -42,7 +42,7 @@ class AHMInstance extends InstanceBase {
 				updateStatus: (...a) => this.updateStatus(...a),
 				setVariableValues: (...a) => this.setVariableValues(...a)
 			}
-		}, this.AHMState)
+		}, this.AHMState, TIME_BETW_MULTIPLE_REQ_MS)
 
 		// Set up state polling
 		this.pollState = pollStateTimer(

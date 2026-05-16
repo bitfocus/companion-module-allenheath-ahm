@@ -2,6 +2,14 @@ import { ChannelType, SendInfoType } from "../utility/constants.js"
 import { sleep } from "../utility/helpers.js"
 import { requestLevelInfo, requestMuteInfo, requestSendInfo } from "../utility/formatHexMIDI.js"
 
+/**
+ * AHM state polling factory function.
+ * @param {*} socket 
+ * @param {Number} interval - Poll rate in ms
+ * @param {*} state 
+ * @param {*} onError 
+ * @returns {Function[]}
+ */
 export function pollStateTimer(
     socket,
     interval = 10000,

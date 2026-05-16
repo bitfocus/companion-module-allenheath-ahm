@@ -1,5 +1,8 @@
 import { Regex } from "@companion-module/base"
 
+/**
+ * Module config in seperate file
+ */
 export const configFields = [
     {
         type: 'textinput',
