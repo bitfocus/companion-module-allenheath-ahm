@@ -1,49 +1,64 @@
-import * as Helpers from './utility/helpers.js'
+import { parseIDsToArray, getVarNameInputLevel, getVarNameZoneLevel, getVarNameCGLevel } from './utility/helpers.js'
 
-export function getVariables(numberOfInputs, numberOfZones) {
+/**
+ * Sets up Companion custom variables
+ * @param {String[]} manTrackInputs 
+ * @param {String[]} manTrackZones 
+ * @param {String[]} manTrackCGs 
+ * @returns 
+ */
+export function getVariables(manTrackInputs, manTrackZones, manTrackCGs) {
 	const variableDefinitions = []
 	const variableInitValuesArray = []
+	console.log('mantrackins', manTrackInputs, typeof(manTrackInputs))
+
+	const cleanManIns = parseIDsToArray(manTrackInputs)
+	const cleanManZones = parseIDsToArray(manTrackZones)
+	const cleanManCGs = parseIDsToArray(manTrackCGs)
 
 	// generate input level variables
-	let unitInAmount = numberOfInputs
-	for (let i = 1; i <= unitInAmount; i++) {
-		let varId = Helpers.getVarNameInputLevel(i)
-		variableDefinitions.push({
-			name: `Input ${i} Level`,
-			variableId: varId,
-		})
-		// initialize with ?
-		variableInitValuesArray.push({
-			[varId]: '?',
-		})
+	if (cleanManIns.length != 0) {
+		for (const i of cleanManIns) {
+			let varId = getVarNameInputLevel(i)
+			variableDefinitions.push({
+				name: `Input ${i} Level`,
+				variableId: varId,
+			})
+			// initialize with ?
+			variableInitValuesArray.push({
+				[varId]: '?',
+			})
+		}
 	}
 
 	// generate zone level variables
-	let unitZoneAmount = numberOfZones
-	for (let i = 1; i <= unitZoneAmount; i++) {
-		let varId = Helpers.getVarNameZoneLevel(i)
-		variableDefinitions.push({
-			name: `Zone ${i} Level`,
-			variableId: varId,
-		})
-		// initialize with ?
-		variableInitValuesArray.push({
-			[varId]: '?',
-		})
+	if (cleanManZones.length != 0) {
+		for (const i of cleanManZones) {
+			let varId = getVarNameZoneLevel(i)
+			variableDefinitions.push({
+				name: `Zone ${i} Level`,
+				variableId: varId,
+			})
+			// initialize with ?
+			variableInitValuesArray.push({
+				[varId]: '?',
+			})
+		}
 	}
 
 	// generate control group level variables
-	let unitControlGroupAmount = 32
-	for (let i = 1; i <= unitControlGroupAmount; i++) {
-		let varId = Helpers.getVarNameCGLevel(i)
-		variableDefinitions.push({
-			name: `Control Group ${i} Level`,
-			variableId: varId,
-		})
-		// initialize with ?
-		variableInitValuesArray.push({
-			[varId]: '?',
-		})
+	if (cleanManCGs.length != 0) {
+		for (const i of cleanManCGs) {
+			let varId = getVarNameCGLevel(i)
+			variableDefinitions.push({
+				name: `Control Group ${i} Level`,
+				variableId: varId,
+			})
+			// initialize with ?
+			variableInitValuesArray.push({
+				[varId]: '?',
+			})
+		}
 	}
 
 	// Variable for recalled preset data

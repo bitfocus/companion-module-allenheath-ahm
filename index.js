@@ -34,6 +34,11 @@ class AHMInstance extends InstanceBase {
 		// Set up state container
 		this.AHMState = trackAHMParams()
 
+		// Set up manual tracking
+		this.AHMState.setManualTracking(ChannelType.Input, this.config.manTrackInputs)
+		this.AHMState.setManualTracking(ChannelType.Zone, this.config.manTrackZones)
+		this.AHMState.setManualTracking(ChannelType.ControlGroup, this.config.manTrackCGs)
+
 		// Assign TCP client
 		this.tcpClient = TCPClient({
 			companion: {
@@ -70,6 +75,7 @@ class AHMInstance extends InstanceBase {
 	async destroy() {
 		this.tcpClient.destroy()
 		this.pollState.stop()
+		this.AHMState.reset() // Clear out DSP state
 		this.log('debug', 'destroy')
 	}
 
@@ -78,7 +84,14 @@ class AHMInstance extends InstanceBase {
 
 		this.numberOfInputs = parseInt(this.config.ahm_type)
 		this.numberOfZones = parseInt(this.config.ahm_type)
+
+		this.AHMState.reset() // Clear out DSP state
 		
+		// Set up manual tracking
+		this.AHMState.setManualTracking(ChannelType.Input, this.config.manTrackInputs)
+		this.AHMState.setManualTracking(ChannelType.Zone, this.config.manTrackZones)
+		this.AHMState.setManualTracking(ChannelType.ControlGroup, this.config.manTrackCGs)
+
 		// Set up state polling
 		this.pollState = pollStateTimer(
 			this.tcpClient,
@@ -86,7 +99,6 @@ class AHMInstance extends InstanceBase {
 			this.AHMState,
 			(err) => console.error("Poller error:", err)
 		)
-		this.pollState.start()
 		this.initActions()
 		this.initVariables()
 		this.tcpClient.init(this.config.host, MIDI_PORT)
@@ -97,7 +109,9 @@ class AHMInstance extends InstanceBase {
 	}
 
 	initVariables() {
-		const [definitions, initValues] = getVariables(this.numberOfInputs, this.numberOfZones)
+		const [definitions, initValues] = getVariables(this.config.manTrackInputs ?? [], 
+			this.config.manTrackZones ?? [],
+			this.config.manTrackCGs ?? [])
 		this.setVariableDefinitions(definitions)
 		this.setVariableValues(initValues)
 	}
@@ -122,9 +136,6 @@ class AHMInstance extends InstanceBase {
 				cmd.buffers = [
 					Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12, 0x01, 0x00, 0x00, 0x01, 0x0b, 0x1b, channel, 0xf7]),
 				]
-				break
-			case 'get_muteInfo':
-				cmd.buffers = [Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12, 0x01, 0x00, 0x00, 0x01, 0x09, channel, 0xf7])]
 				break */
 
 }

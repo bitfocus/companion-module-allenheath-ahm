@@ -134,3 +134,15 @@ export function getDbuValue(dezValue) {
 
 	return dbu_Values[dezValue]
 }
+
+/**
+ * Take a string of comma-sperated ids and turn them into an array
+ * @param {String} ids 
+ * @returns {Number[]}
+ */
+export function parseIDsToArray(ids) {
+	return String(ids ?? '')
+		.split(',')
+		.map((x) => Number(x.trim()))
+		.filter(x => Number.isFinite(x))
+}
