@@ -1,4 +1,5 @@
 import { InstanceBase } from '@companion-module/base'
+import { dbu_Values } from './constants.js'
 
 /**
  * Generates a Dropdown Choices Array with labelled incrementing values.
@@ -110,4 +111,38 @@ export function getChTypeOfSendType(sendType) {
  */
 export function getSendChTypeOfSendType(sendType) {
 	return parseInt(0x00 + (sendType & 0x0f)) // bitwise and with low nibble to only get its value (send type)
+}
+
+/**
+ * Get Javascript promise to sleep for a certain duration of time
+ * @param {Number} ms - time in milliseconds
+ * @returns {Promise}
+ */
+export function sleep(ms) {
+	return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+/**
+ * Return corresponding dBu Value to decimal number
+ * @param {*} dezValue
+ * @returns
+ */
+export function getDbuValue(dezValue) {
+	if (Number.isInteger(dezValue) == false || dezValue > 127 || dezValue < 0) {
+		return NaN
+	}
+
+	return dbu_Values[dezValue]
+}
+
+/**
+ * Take a string of comma-sperated ids and turn them into an array
+ * @param {String} ids
+ * @returns {Number[]}
+ */
+export function parseIDsToArray(ids) {
+	return String(ids ?? '')
+		.split(',')
+		.map((x) => Number(x.trim()))
+		.filter((x) => Number.isFinite(x))
 }

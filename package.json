@@ -5,7 +5,9 @@
 	"main": "index.js",
 	"type": "module",
 	"scripts": {
-		"format": "prettier -w ."
+		"format": "prettier -w .",
+		"package": "companion-module-build",
+		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"license": "MIT",
 	"repository": {
@@ -13,10 +15,10 @@
 		"url": "git+https://github.com/bitfocus/companion-module-allenheath-ahm.git"
 	},
 	"dependencies": {
-		"@companion-module/base": "~1.11.2"
+		"@companion-module/base": "~1.14.1"
 	},
 	"devDependencies": {
-		"@companion-module/tools": "^2.6.1",
+		"@companion-module/tools": "^2.7.2",
 		"prettier": "^3.4.2"
 	},
 	"prettier": "@companion-module/tools/.prettierrc.json"

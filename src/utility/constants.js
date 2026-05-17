@@ -1,3 +1,5 @@
+import { combineRgb } from '@companion-module/base'
+
 // dBu Decimal Mapping Array
 export const dbu_Values = [
 	'-inf',
@@ -130,18 +132,36 @@ export const dbu_Values = [
 	'+10.0',
 ]
 
-// Channel Type (Variable N in documentation)
+/**
+ * Channel Channel Type (Variable N in documentation)
+ */
 export const ChannelType = {
 	Input: 0,
 	Zone: 1,
 	ControlGroup: 2,
 }
 
+/**
+ * @typedef {typeof ChannelType[keyof typeof ChannelType]} ChannelType
+ */
+
 // Send Type, high nibble stands for channel type, low nibble stands for send channel type
 export const SendType = {
 	InputToZone: 0x01, // 0b 00000001
 	ZoneToZone: 0x11, // 0b 00010001
 }
+
+/**
+ * What info to request from a send? LEVEL or MUTE
+ */
+export const SendInfoType = {
+	LEVEL: 0x02,
+	MUTE: 0x03,
+}
+
+/**
+ * @typedef {typeof SendInfoType[keyof typeof SendInfoType]} SendInfoType
+ */
 
 // Types of feedbacks to monitor (e.g. poll or update on connect)
 export const MonitoredFeedbackType = {
@@ -154,4 +174,12 @@ export const PlaybackChannel = {
 	Mono1: 0,
 	Mono2: 1,
 	Stereo: 2,
+}
+
+// Color swatches across the entire module
+export const Colors = {
+	White: combineRgb(255, 255, 255),
+	Red: combineRgb(200, 0, 0),
+	Blue: combineRgb(5, 151, 242),
+	Black: combineRgb(0, 0, 0),
 }

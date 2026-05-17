@@ -1,14 +1,10 @@
-import { combineRgb } from '@companion-module/base'
+import { Colors } from './utility/constants.js'
 
-export function getPresets() {
+export function getPresets(numberOfInputs, numberOfZones) {
 	let presets = []
 
-	const ColorWhite = combineRgb(255, 255, 255)
-	const ColorBlack = combineRgb(0, 0, 0)
-	const ColorRed = combineRgb(200, 0, 0)
-
 	// Mute Inputs
-	for (let index = 0; index < this.numberOfInputs; index++) {
+	for (let index = 0; index < numberOfInputs; index++) {
 		presets.push({
 			type: 'button',
 			category: 'Mute Input',
@@ -17,8 +13,8 @@ export function getPresets() {
 			style: {
 				text: `Mute Input ${parseInt(index) + 1}`,
 				size: '14',
-				color: ColorWhite,
-				bgcolor: ColorBlack,
+				color: Colors.White,
+				bgcolor: Colors.Black,
 			},
 			steps: [
 				{
@@ -53,8 +49,8 @@ export function getPresets() {
 						input: index + 1,
 					},
 					style: {
-						color: ColorWhite,
-						bgcolor: ColorRed,
+						color: Colors.White,
+						bgcolor: Colors.Red,
 					},
 				},
 			],
@@ -62,7 +58,7 @@ export function getPresets() {
 	}
 
 	// Mute Zones
-	for (let index = 0; index < this.numberOfZones; index++) {
+	for (let index = 0; index < numberOfZones; index++) {
 		presets.push({
 			type: 'button',
 			category: 'Mute Zones',
@@ -71,8 +67,8 @@ export function getPresets() {
 			style: {
 				text: `Mute Zone ${parseInt(index) + 1}`,
 				size: '14',
-				color: ColorWhite,
-				bgcolor: ColorBlack,
+				color: Colors.White,
+				bgcolor: Colors.Black,
 			},
 			steps: [
 				{
@@ -107,8 +103,8 @@ export function getPresets() {
 						zone: parseInt(index) + 1,
 					},
 					style: {
-						color: ColorWhite,
-						bgcolor: ColorRed,
+						color: Colors.White,
+						bgcolor: Colors.Red,
 					},
 				},
 			],
@@ -116,7 +112,7 @@ export function getPresets() {
 	}
 
 	// Mute Control Groups
-	for (let index = 0; index < this.numberOfControlGroups; index++) {
+	for (let index = 0; index < 32; index++) {
 		presets.push({
 			type: 'button',
 			category: 'Mute Control Groups',
@@ -125,8 +121,8 @@ export function getPresets() {
 			style: {
 				text: `Mute Control Group ${parseInt(index) + 1}`,
 				size: '14',
-				color: ColorWhite,
-				bgcolor: ColorBlack,
+				color: Colors.White,
+				bgcolor: Colors.Black,
 			},
 			steps: [
 				{
@@ -161,8 +157,8 @@ export function getPresets() {
 						cg: parseInt(index) + 1,
 					},
 					style: {
-						color: ColorWhite,
-						bgcolor: ColorRed,
+						color: Colors.White,
+						bgcolor: Colors.Red,
 					},
 				},
 			],
@@ -170,8 +166,8 @@ export function getPresets() {
 	}
 
 	// Mute input to Zone
-	for (let input = 0; input < this.numberOfInputs; input++) {
-		for (let zone = 0; zone < this.numberOfZones; zone++) {
+	for (let input = 0; input < numberOfInputs; input++) {
+		for (let zone = 0; zone < numberOfZones; zone++) {
 			presets.push({
 				type: 'button',
 				category: `Mute Input ${parseInt(input) + 1} to Zone`,
@@ -180,8 +176,8 @@ export function getPresets() {
 				style: {
 					text: `Mute Input ${parseInt(input) + 1} to Zone ${parseInt(zone) + 1}`,
 					size: '14',
-					color: ColorWhite,
-					bgcolor: ColorBlack,
+					color: Colors.White,
+					bgcolor: Colors.Black,
 				},
 				steps: [
 					{
@@ -219,8 +215,8 @@ export function getPresets() {
 							zone: zone + 1,
 						},
 						style: {
-							color: ColorWhite,
-							bgcolor: ColorRed,
+							color: Colors.White,
+							bgcolor: Colors.Red,
 						},
 					},
 				],
