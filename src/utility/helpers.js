@@ -124,8 +124,8 @@ export function sleep(ms) {
 
 /**
  * Return corresponding dBu Value to decimal number
- * @param {*} dezValue 
- * @returns 
+ * @param {*} dezValue
+ * @returns
  */
 export function getDbuValue(dezValue) {
 	if (Number.isInteger(dezValue) == false || dezValue > 127 || dezValue < 0) {
@@ -137,12 +137,12 @@ export function getDbuValue(dezValue) {
 
 /**
  * Take a string of comma-sperated ids and turn them into an array
- * @param {String} ids 
+ * @param {String} ids
  * @returns {Number[]}
  */
 export function parseIDsToArray(ids) {
 	return String(ids ?? '')
 		.split(',')
 		.map((x) => Number(x.trim()))
-		.filter(x => Number.isFinite(x))
+		.filter((x) => Number.isFinite(x))
 }

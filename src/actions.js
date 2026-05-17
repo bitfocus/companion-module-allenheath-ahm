@@ -1,18 +1,21 @@
-import { getChoicesArrayWithIncrementingNumbers, 
-	getChoicesArrayOf1DArray, 
-	getChoicesArrayOfKeyValueObject, 
+import {
+	getChoicesArrayWithIncrementingNumbers,
+	getChoicesArrayOf1DArray,
+	getChoicesArrayOfKeyValueObject,
 	checkIfValueOfEnum,
 	getChTypeOfSendType,
 	getSendChTypeOfSendType,
-	sleep
- } from './utility/helpers.js'
-import { dbu_Values,
-	PlaybackChannel,
-	ChannelType,
-	SendType,
-	SendInfoType
- } from './utility/constants.js'
-import { setLevelCallback, incDecLevelCallback, incDecSendLevelCallback, requestSendInfo, requestLevelInfo, requestMuteInfo } from './utility/formatHexMIDI.js'
+	sleep,
+} from './utility/helpers.js'
+import { dbu_Values, PlaybackChannel, ChannelType, SendType, SendInfoType } from './utility/constants.js'
+import {
+	setLevelCallback,
+	incDecLevelCallback,
+	incDecSendLevelCallback,
+	requestSendInfo,
+	requestLevelInfo,
+	requestMuteInfo,
+} from './utility/formatHexMIDI.js'
 
 const PRESET_COUNT = 500
 const PLAYBACK_COUNT = 127
@@ -116,11 +119,11 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 			console.log('Send mute command -- Input: ', action.options.mute_number, action.options.mute)
 			let buffers = [Buffer.from([0x90, inputNumber, action.options.mute ? 0x7f : 0x3f, 0x90, inputNumber, 0])]
 			tcpClient.queue(buffers)
-			
+
 			buffers = requestMuteInfo(ChannelType.Input, action.options.mute_number)
 			console.log('Request mute info -- Input: ', buffers, action.options.mute_number)
 			tcpClient.queue(buffers)
-			
+
 			console.log('checking feedback inputMute')
 			companion.checkFeedbacks('inputMute')
 		},
@@ -138,7 +141,7 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 			buffers = requestMuteInfo(ChannelType.Zone, action.options.mute_number)
 			console.log('Request mute info -- Zone: ', buffers, action.options.mute_number)
 			tcpClient.queue(buffers)
-			
+
 			// state.setChannel(ChannelType.Zone, zoneNumber, undefined, mute)
 			console.log('checking feedback zoneMute')
 			companion.checkFeedbacks('zoneMute')
@@ -150,27 +153,17 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 		options: listOptions('Preset', PRESET_COUNT, -1),
 		callback: (action) => {
 			// note: presetNumber is one less than the actual preset number, since the action list starts at 0
-			let presetNumber = parseInt(action.options.number) 
+			let presetNumber = parseInt(action.options.number)
 			let bank = Math.floor(presetNumber / 128)
 			let presetOffset = presetNumber % 128
- 			let buffers = [
-				Buffer.from([
-					0xb0,
-					0x00,
-					bank,
-					0xc0,
-					presetOffset,
-				]),
-			]
+			let buffers = [Buffer.from([0xb0, 0x00, bank, 0xc0, presetOffset])]
 			tcpClient.queue(buffers)
 		},
 	}
 
 	actions['playback_track'] = {
 		name: 'Playback Track',
-		options: listOptions('Playback Track', PLAYBACK_COUNT, -1).concat(
-			playbackChannelOptions('Playback Channel'),
-		),
+		options: listOptions('Playback Track', PLAYBACK_COUNT, -1).concat(playbackChannelOptions('Playback Channel')),
 		callback: (action) => {
 			let trackNumber = parseInt(action.options.number)
 			let playbackChannel = parseInt(action.options.playbackChannel)
@@ -187,9 +180,7 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 
 	actions['input_to_zone'] = {
 		name: 'Mute Input to Zone',
-		options: muteOptions('Input', numberOfInputs, -1).concat(
-			listOptions('Zone', numberOfZones, -1),
-		),
+		options: muteOptions('Input', numberOfInputs, -1).concat(listOptions('Zone', numberOfZones, -1)),
 		callback: (action) => {
 			let inputNumber = parseInt(action.options.mute_number)
 			let zoneNumber = parseInt(action.options.number)
@@ -216,9 +207,9 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 			tcpClient.queue(buffers)
 
 			// manually update internal state
-            state.setSend(ChannelType.Input, inputNumber, zoneNumber, undefined, action.options.mute)
+			state.setSend(ChannelType.Input, inputNumber, zoneNumber, undefined, action.options.mute)
 			companion.checkFeedbacks('inputToZoneMute')
-			
+
 			console.log(inputNumber, zoneNumber, SendInfoType.MUTE)
 			tcpClient.queue(requestSendInfo(ChannelType.Input, SendInfoType.MUTE, inputNumber, zoneNumber))
 		},
@@ -262,9 +253,7 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 
 	actions['inc_dec_in_zn_send_level'] = {
 		name: 'Increment/Decrement Input to Zone Send Level',
-		options: incDecOptions(ChannelType.Input, numberOfInputs, -1).concat(
-			listOptions('Zone', numberOfZones, -1),
-		),
+		options: incDecOptions(ChannelType.Input, numberOfInputs, -1).concat(listOptions('Zone', numberOfZones, -1)),
 		callback: (action) => {
 			tcpClient.queue(incDecSendLevelCallback(action, SendType.InputToZone))
 		},
@@ -272,9 +261,7 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 
 	actions['inc_dec_zn_zn_send_level'] = {
 		name: 'Increment/Decrement Zone to Zone Send Level',
-		options: incDecOptions('Zone', numberOfZones, -1).concat(
-			listOptions('Zone', numberOfZones, -1),
-		),
+		options: incDecOptions('Zone', numberOfZones, -1).concat(listOptions('Zone', numberOfZones, -1)),
 		callback: (action) => {
 			tcpClient.queue(incDecSendLevelCallback(action, SendType.ZoneToZone))
 		},
@@ -287,7 +274,6 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 		callback: (action) => {
 			tcpClient.queue(setLevelCallback(action, ChannelType.ControlGroup))
 			tcpClient.queue(requestLevelInfo(ChannelType.ControlGroup, action.options.setlvl_ch_number))
-
 		},
 	}
 
@@ -297,7 +283,6 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 		callback: (action) => {
 			tcpClient.queue(incDecLevelCallback(action, ChannelType.ControlGroup))
 			tcpClient.queue(requestLevelInfo(ChannelType.ControlGroup, action.options.setlvl_ch_number))
-
 		},
 	}
 
@@ -309,13 +294,11 @@ export function getActions(tcpClient, state, numberOfInputs, numberOfZones, { co
 			let mute = action.options.mute
 			let buffers = [Buffer.from([0x92, cgNumber, action.options.mute ? 0x7f : 0x3f, 0x91, cgNumber, 0])]
 			tcpClient.queue(buffers)
-			
 
 			buffers = requestMuteInfo(ChannelType.ControlGroup, action.options.mute_number)
 			console.log('Request mute info -- Control Group: ', buffers, action.options.mute_number)
 			tcpClient.queue(buffers)
 
-			
 			// state.setChannel(ChannelType.ControlGroup, cgNumber, undefined, mute)
 			companion.checkFeedbacks('cgMute')
 		},

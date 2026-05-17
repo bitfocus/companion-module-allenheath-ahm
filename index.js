@@ -4,7 +4,7 @@ import { getPresets } from './src/presets.js'
 import { getVariables } from './src/variables.js'
 import { getFeedbacks } from './src/feedbacks.js'
 import UpgradeScripts from './src/upgrades.js'
-import { ChannelType, MonitoredFeedbackType  } from './src/utility/constants.js'
+import { ChannelType, MonitoredFeedbackType } from './src/utility/constants.js'
 import { sleep } from './src/utility/helpers.js'
 import { configFields } from './src/config.js'
 import { trackAHMParams } from './src/state/AHMState.js'
@@ -40,21 +40,22 @@ class AHMInstance extends InstanceBase {
 		this.AHMState.setManualTracking(ChannelType.ControlGroup, this.config.manTrackCGs)
 
 		// Assign TCP client
-		this.tcpClient = TCPClient({
-			companion: {
-				checkFeedbacks: (...a) => this.checkFeedbacks(...a),
-				log: (...a) => this.log(...a),
-				updateStatus: (...a) => this.updateStatus(...a),
-				setVariableValues: (...a) => this.setVariableValues(...a)
-			}
-		}, this.AHMState, TIME_BETW_MULTIPLE_REQ_MS)
+		this.tcpClient = TCPClient(
+			{
+				companion: {
+					checkFeedbacks: (...a) => this.checkFeedbacks(...a),
+					log: (...a) => this.log(...a),
+					updateStatus: (...a) => this.updateStatus(...a),
+					setVariableValues: (...a) => this.setVariableValues(...a),
+				},
+			},
+			this.AHMState,
+			TIME_BETW_MULTIPLE_REQ_MS,
+		)
 
 		// Set up state polling
-		this.pollState = pollStateTimer(
-			this.tcpClient,
-			this.config.pollRate,
-			this.AHMState,
-			(err) => console.error("Poller error:", err)
+		this.pollState = pollStateTimer(this.tcpClient, this.config.pollRate, this.AHMState, (err) =>
+			console.error('Poller error:', err),
 		)
 
 		// Init TCP connection
@@ -86,18 +87,15 @@ class AHMInstance extends InstanceBase {
 		this.numberOfZones = parseInt(this.config.ahm_type)
 
 		this.AHMState.reset() // Clear out DSP state
-		
+
 		// Set up manual tracking
 		this.AHMState.setManualTracking(ChannelType.Input, this.config.manTrackInputs)
 		this.AHMState.setManualTracking(ChannelType.Zone, this.config.manTrackZones)
 		this.AHMState.setManualTracking(ChannelType.ControlGroup, this.config.manTrackCGs)
 
 		// Set up state polling
-		this.pollState = pollStateTimer(
-			this.tcpClient,
-			this.config.pollRate,
-			this.AHMState,
-			(err) => console.error("Poller error:", err)
+		this.pollState = pollStateTimer(this.tcpClient, this.config.pollRate, this.AHMState, (err) =>
+			console.error('Poller error:', err),
 		)
 		this.initActions()
 		this.initVariables()
@@ -109,9 +107,11 @@ class AHMInstance extends InstanceBase {
 	}
 
 	initVariables() {
-		const [definitions, initValues] = getVariables(this.config.manTrackInputs ?? [], 
+		const [definitions, initValues] = getVariables(
+			this.config.manTrackInputs ?? [],
 			this.config.manTrackZones ?? [],
-			this.config.manTrackCGs ?? [])
+			this.config.manTrackCGs ?? [],
+		)
 		this.setVariableDefinitions(definitions)
 		this.setVariableValues(initValues)
 	}
@@ -125,11 +125,13 @@ class AHMInstance extends InstanceBase {
 	}
 
 	initActions() {
-		this.setActionDefinitions(getActions(this.tcpClient, this.AHMState, this.numberOfInputs, this.numberOfZones, {
-			companion: {
-				checkFeedbacks: (...a) => this.checkFeedbacks(...a),
-			}
-		}))
+		this.setActionDefinitions(
+			getActions(this.tcpClient, this.AHMState, this.numberOfInputs, this.numberOfZones, {
+				companion: {
+					checkFeedbacks: (...a) => this.checkFeedbacks(...a),
+				},
+			}),
+		)
 	}
 
 	/* case 'get_phantom':
@@ -137,7 +139,6 @@ class AHMInstance extends InstanceBase {
 					Buffer.from([0xf0, 0x00, 0x00, 0x1a, 0x50, 0x12, 0x01, 0x00, 0x00, 0x01, 0x0b, 0x1b, channel, 0xf7]),
 				]
 				break */
-
 }
 
 runEntrypoint(AHMInstance, UpgradeScripts)

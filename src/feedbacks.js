@@ -25,7 +25,7 @@ export function getFeedbacks(state) {
 			console.log('feedback log', input, feedback.options.input)
 
 			state.addChannel(ChannelType.Input, input)
-			
+
 			let value = state.getMute(ChannelType.Input, input)
 			console.log('feedback eval:', input, value)
 			return value
@@ -33,7 +33,7 @@ export function getFeedbacks(state) {
 		unsubscribe: (feedback) => {
 			let input = parseInt(feedback.options.input)
 			state.removeChannel(ChannelType.Input, input)
-		}
+		},
 	}
 
 	feedbacks['inputLevel'] = {
@@ -53,14 +53,14 @@ export function getFeedbacks(state) {
 			console.log('feedback log', input, feedback.options.input)
 
 			state.addChannel(ChannelType.Input, input)
-			
+
 			console.log('feedback getLevel ', state.getLevel(ChannelType.Input, input))
 			return getDbuValue(state.getLevel(ChannelType.Input, input))
 		},
 		unsubscribe: (feedback) => {
 			let input = parseInt(feedback.options.input)
 			state.removeChannel(ChannelType.Input, input)
-		}
+		},
 	}
 
 	feedbacks['zoneMute'] = {
@@ -83,13 +83,13 @@ export function getFeedbacks(state) {
 			let zone = parseInt(feedback.options.zone)
 
 			state.addChannel(ChannelType.Zone, zone)
-			
+
 			return state.getMute(ChannelType.Zone, zone)
 		},
 		unsubscribe: (feedback) => {
 			let zone = parseInt(feedback.options.zone)
 			state.removeChannel(ChannelType.Zone, zone)
-		}
+		},
 	}
 
 	feedbacks['zoneLevel'] = {
@@ -116,7 +116,7 @@ export function getFeedbacks(state) {
 		unsubscribe: (feedback) => {
 			let zone = parseInt(feedback.options.zone)
 			state.removeChannel(ChannelType.Zone, zone)
-		}
+		},
 	}
 
 	feedbacks['cgMute'] = {
@@ -137,15 +137,15 @@ export function getFeedbacks(state) {
 		],
 		callback: (feedback, bank) => {
 			let cg = parseInt(feedback.options.cg)
- 
+
 			state.addChannel(ChannelType.ControlGroup, cg)
-			
+
 			return state.getMute(ChannelType.ControlGroup, cg)
 		},
 		unsubscribe: (feedback) => {
 			let cg = parseInt(feedback.options.cg)
 			state.removeChannel(ChannelType.ControlGroup, cg)
-		}
+		},
 	}
 
 	feedbacks['cgLevel'] = {
@@ -172,7 +172,7 @@ export function getFeedbacks(state) {
 		unsubscribe: (feedback) => {
 			let cg = parseInt(feedback.options.cg)
 			state.removeChannel(ChannelType.ControlGroup, cg)
-		}
+		},
 	}
 
 	feedbacks['inputToZoneMute'] = {
@@ -264,7 +264,7 @@ export function getFeedbacks(state) {
 		],
 		callback: (feedback) => {
 			let currentPreset = state.getPreset()
-			return currentPreset == feedback.options.preset 
+			return currentPreset == feedback.options.preset
 		},
 	}
 

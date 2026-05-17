@@ -156,7 +156,7 @@ export const SendType = {
  */
 export const SendInfoType = {
 	LEVEL: 0x02,
-	MUTE: 0x03
+	MUTE: 0x03,
 }
 
 /**
@@ -181,5 +181,5 @@ export const Colors = {
 	White: combineRgb(255, 255, 255),
 	Red: combineRgb(200, 0, 0),
 	Blue: combineRgb(5, 151, 242),
-	Black: combineRgb(0, 0, 0)
+	Black: combineRgb(0, 0, 0),
 }

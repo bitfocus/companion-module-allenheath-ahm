@@ -2,15 +2,15 @@ import { parseIDsToArray, getVarNameInputLevel, getVarNameZoneLevel, getVarNameC
 
 /**
  * Sets up Companion custom variables
- * @param {String[]} manTrackInputs 
- * @param {String[]} manTrackZones 
- * @param {String[]} manTrackCGs 
- * @returns 
+ * @param {String[]} manTrackInputs
+ * @param {String[]} manTrackZones
+ * @param {String[]} manTrackCGs
+ * @returns
  */
 export function getVariables(manTrackInputs, manTrackZones, manTrackCGs) {
 	const variableDefinitions = []
 	const variableInitValuesArray = []
-	console.log('mantrackins', manTrackInputs, typeof(manTrackInputs))
+	console.log('mantrackins', manTrackInputs, typeof manTrackInputs)
 
 	const cleanManIns = parseIDsToArray(manTrackInputs)
 	const cleanManZones = parseIDsToArray(manTrackZones)
@@ -68,7 +68,7 @@ export function getVariables(manTrackInputs, manTrackZones, manTrackCGs) {
 	})
 	// initialize with '0'
 	variableInitValuesArray.push({
-		'currentPreset': '0',
+		currentPreset: '0',
 	})
 
 	// flatten init Value Array (convert into single object instead of array)
