@@ -50,6 +50,8 @@ export function createTracking(state) {
 	 * @returns {{isNew: Boolean, channel: Object}} Channel state and whether it was newly created
 	 */
 	function addChannel(type, chNumber, feedbackId, feedbackType) {
+		removeStaleChannelSubscriptions(type, chNumber, feedbackId)
+
 		const result = getOrCreateChannel(type, chNumber)
 		if (feedbackId !== undefined) result.channel.subscriptions.set(feedbackId, feedbackType)
 		return result
@@ -80,6 +82,30 @@ export function createTracking(state) {
 				pruneChannel(channels, chNumber, channel)
 				return
 			}
+		}
+	}
+
+	/**
+	 * Remove a feedback's previous channel subscription when it moved to another channel.
+	 * MANUAL tracking is intentionally ignored because multiple manual subscriptions can exist.
+	 * @param {ChannelType} type - ChannelType
+	 * @param {Number} chNumber - Current channel number (1-indexed)
+	 * @param {String} feedbackId - Unique Companion feedback ID or MANUAL
+	 * @returns {void}
+	 */
+	function removeStaleChannelSubscriptions(type, chNumber, feedbackId) {
+		if (feedbackId === undefined || feedbackId === MANUAL_ID) return
+
+		const channels = state.trackedChannels[type]
+		// loop through all channels
+		for (const [existingChNumber, channel] of channels) {
+			// This entry is not stale => skip
+			if (existingChNumber === chNumber) continue
+			// Delete feedback from the old channel, if it exists there
+			if (!channel.subscriptions.delete(feedbackId)) continue
+			// Run prune on old channel
+			pruneChannel(channels, existingChNumber, channel)
+			return
 		}
 	}
 
@@ -137,6 +163,8 @@ export function createTracking(state) {
 	 * @returns {{isNew: Boolean, send: Object}} Send state and whether its values need initialization
 	 */
 	function addSend(type, fromChNum, toChNum, feedbackId, feedbackType) {
+		removeStaleSendSubscriptions(type, fromChNum, toChNum, feedbackId)
+
 		// get source channel
 		const { channel } = getOrCreateChannel(type, fromChNum)
 		// get or create the send in the source channel
@@ -170,6 +198,34 @@ export function createTracking(state) {
 					pruneChannel(channels, fromChNum, channel)
 					return // found the feedbackId, stop searching
 				}
+			}
+		}
+	}
+
+	/**
+	 * Remove a feedback's previous send subscription when it moved to another send.
+	 * MANUAL tracking is intentionally ignored because multiple manual subscriptions can exist.
+	 * @param {ChannelType} type - Type of the source channel
+	 * @param {Number} fromChNum - Current source channel number (1-indexed)
+	 * @param {Number} toChNum - Current target channel number (1-indexed)
+	 * @param {String} feedbackId - Unique Companion feedback ID or MANUAL
+	 * @returns {void}
+	 */
+	function removeStaleSendSubscriptions(type, fromChNum, toChNum, feedbackId) {
+		if (feedbackId === undefined || feedbackId === MANUAL_ID) return
+
+		const channels = state.trackedChannels[type]
+		// loop through all channels and their sends
+		for (const [existingFromChNum, channel] of channels) {
+			for (const [existingToChNum, send] of channel.sends) {
+				// This entry is not stale => skip
+				if (existingFromChNum === fromChNum && existingToChNum === toChNum) continue
+				// Delete feedback from the old send, if it exists there
+				if (!send.subscriptions.delete(feedbackId)) continue
+				// Remove the old send and run prune on it's channel
+				if (send.subscriptions.size === 0) channel.sends.delete(existingToChNum)
+				pruneChannel(channels, existingFromChNum, channel)
+				return
 			}
 		}
 	}
