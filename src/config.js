@@ -5,6 +5,17 @@ import { Regex } from '@companion-module/base'
  */
 export const configFields = [
 	{
+		type: 'static-text',
+		id: 'upgradeNotice',
+		label: 'Upgrade Notice',
+		value:
+			'Users upgrading from the 2.x module should fill out the Manual Channel Tracking ' +
+			'section with channel numbers for all inputs, zones, and control groups level global variables are needed for. ' +
+			'<br>This module no longer creates global variables for levels of every channel automatically.',
+		default: false,
+		width: 12,
+	},
+	{
 		type: 'textinput',
 		id: 'host',
 		label: 'Device IP',
@@ -39,11 +50,10 @@ export const configFields = [
 		id: 'manTrack-help',
 		label: 'Manual Channel Tracking',
 		value:
-			'Specify channels to be tracked in global variables. ' +
-			'This creates a variable for each input, zone, or control group that returns its level. ' +
+			'Specify inputs, zones, and control groups to have levels tracked in global variables. ' +
 			'Any channel not tracked here can still be tracked using local variables and the "Input Level", ' +
-			'"Zone Level", and "Control Group Level" feedbacks. <br> NOTE: using feedbacks with local variables ' +
-			'will NOT create global variables; use the fields below instead.',
+			'"Zone Level", and "Control Group Level" feedbacks. <br> <b>NOTE:</b> using feedbacks with local variables ' +
+			'will NOT create global variables.',
 		default: false,
 		width: 12,
 	},
