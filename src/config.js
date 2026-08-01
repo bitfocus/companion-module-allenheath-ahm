@@ -11,7 +11,7 @@ export const configFields = [
 		value:
 			'Users upgrading from the 2.x module should fill out the Manual Channel Tracking ' +
 			'section with channel numbers for all inputs, zones, and control groups level global variables are needed for. ' +
-			'<br>This module no longer creates global variables for levels of every channel automatically.',
+			'<br>Feedbacks on channels (local variable) will automatically track the channel. No global variable is generated in that case.',
 		default: false,
 		width: 12,
 	},

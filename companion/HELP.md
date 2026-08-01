@@ -14,4 +14,4 @@ Users upgrading from the `2.x` module version should fill out the Manual Channel
 
 Level global variables are most likely used for button titles. There is no need to completely redo your setup, just input the input, zone, or control group number you need on the configuration page.
 
-NOTE: using feedbacks with local variables will NOT create global variables.
+Moving forward, we recommend you create a local variable to use a feedback (level, mute state) on a single button. This does not generate a global variable.
