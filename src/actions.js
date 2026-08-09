@@ -1,6 +1,6 @@
 import { getChoicesArrayOf1DArray, getChoicesArrayOfKeyValueObject } from './utility/helpers.js'
 import { ChannelType, SendType, SendInfoType, dbu_Values, PlaybackChannel } from './utility/constants.js'
-import { setMute, setLevel, adjustLevel, requestLevelInfo } from './formatMIDI/channels.js'
+import { setMute, setLevel, adjustLevel, requestLevelInfo, requestMuteInfo } from './formatMIDI/channels.js'
 import { requestSendInfo, adjustSendLevel, setInputToZoneMute } from './formatMIDI/sends.js'
 import { setPlaybackTrack } from './formatMIDI/playback.js'
 import { recallPreset } from './formatMIDI/presets.js'
@@ -11,6 +11,12 @@ import { createLogger } from './utility/log.js'
 const PRESET_COUNT = 500
 const PLAYBACK_COUNT = 127
 const log = createLogger('Actions')
+const MUTE_STATE_TIMEOUT_MS = 1000
+
+const MuteOperation = {
+	Set: 'set',
+	Toggle: 'toggle',
+}
 
 export const ActionId = {
 	MuteInput: 'mute_input',
@@ -58,6 +64,7 @@ function listOptions(label, max) {
 /**
  * Builds Companion Action Options for mute actions.
  * Id of the number field will be 'mute_number'.
+ * Id of the operation dropdown will be 'operation'.
  * Id of the mute checkbox field will be 'mute'.
  * @param {String} label - The label of the number field
  * @param {Number} max - maximum value of the number input
@@ -76,9 +83,20 @@ function muteOptions(label, max) {
 			clampValues: false, // would change values when switching AHM types
 		},
 		{
+			type: 'dropdown',
+			id: 'operation',
+			label: 'Operation',
+			default: MuteOperation.Set,
+			choices: [
+				{ id: MuteOperation.Set, label: 'Set mute state' },
+				{ id: MuteOperation.Toggle, label: 'Toggle current state' },
+			],
+		},
+		{
 			type: 'checkbox',
 			id: 'mute',
 			label: 'Mute',
+			isVisible: (options) => options.operation !== MuteOperation.Toggle,
 			default: true,
 		},
 	]
@@ -165,6 +183,29 @@ function playbackChannelOptions(label) {
 	]
 }
 
+async function resolveMute(action, requestCurrentMute, target) {
+	if (action.options.operation !== MuteOperation.Toggle) return action.options.mute
+
+	try {
+		return !(await requestCurrentMute())
+	} catch (error) {
+		log.error('ToggleMuteFailed', { target, message: error.message ?? error })
+		return undefined
+	}
+}
+
+function requestCurrentChannelMute(state, tcpClient, type, chNumber) {
+	const pendingMute = state.waitForChannelMute(type, chNumber, MUTE_STATE_TIMEOUT_MS)
+	tcpClient.queue(requestMuteInfo(type, chNumber))
+	return pendingMute
+}
+
+function requestCurrentSendMute(state, tcpClient, inputNum, zoneNum) {
+	const pendingMute = state.waitForSendMute(ChannelType.Input, inputNum, zoneNum, MUTE_STATE_TIMEOUT_MS)
+	tcpClient.queue(requestSendInfo(SendType.InputToZone, SendInfoType.MUTE, inputNum, zoneNum))
+	return pendingMute
+}
+
 export function getActions(numberOfInputs, numberOfZones, numberOfControlGroups) {
 	const { companion, state, tcpClient } = getContext()
 	let actions = {}
@@ -175,10 +216,15 @@ export function getActions(numberOfInputs, numberOfZones, numberOfControlGroups)
 		name: 'Mute Input',
 		options: muteOptions('Input', numberOfInputs),
 		callback: async (action) => {
-			let inputNum = action.options.mute_number
-			let mute = action.options.mute
+			const inputNum = action.options.mute_number
+			const mute = await resolveMute(
+				action,
+				() => requestCurrentChannelMute(state, tcpClient, ChannelType.Input, inputNum),
+				`input ${inputNum}`,
+			)
+			if (mute === undefined) return
 
-			log.debug(ActionId.MuteInput, { inputNum, mute })
+			log.debug(ActionId.MuteInput, { inputNum, mute, operation: action.options.operation ?? MuteOperation.Set })
 			tcpClient.queue(setMute(ChannelType.Input, inputNum, mute))
 
 			state.setChannel(ChannelType.Input, inputNum, undefined, mute)
@@ -189,11 +235,16 @@ export function getActions(numberOfInputs, numberOfZones, numberOfControlGroups)
 	actions[ActionId.MuteZone] = {
 		name: 'Mute Zone',
 		options: muteOptions('Zone', numberOfZones),
-		callback: (action) => {
-			let zoneNum = action.options.mute_number
-			let mute = action.options.mute
+		callback: async (action) => {
+			const zoneNum = action.options.mute_number
+			const mute = await resolveMute(
+				action,
+				() => requestCurrentChannelMute(state, tcpClient, ChannelType.Zone, zoneNum),
+				`zone ${zoneNum}`,
+			)
+			if (mute === undefined) return
 
-			log.debug(ActionId.MuteZone, { zoneNum, mute })
+			log.debug(ActionId.MuteZone, { zoneNum, mute, operation: action.options.operation ?? MuteOperation.Set })
 			tcpClient.queue(setMute(ChannelType.Zone, zoneNum, mute))
 
 			state.setChannel(ChannelType.Zone, zoneNum, undefined, mute)
@@ -205,10 +256,19 @@ export function getActions(numberOfInputs, numberOfZones, numberOfControlGroups)
 		name: 'Mute Control Group',
 		options: muteOptions('Control Group', numberOfControlGroups),
 		callback: async (action) => {
-			let cgNum = action.options.mute_number
-			let mute = action.options.mute
+			const cgNum = action.options.mute_number
+			const mute = await resolveMute(
+				action,
+				() => requestCurrentChannelMute(state, tcpClient, ChannelType.ControlGroup, cgNum),
+				`control group ${cgNum}`,
+			)
+			if (mute === undefined) return
 
-			log.debug(ActionId.MuteControlGroup, { cgNum, mute })
+			log.debug(ActionId.MuteControlGroup, {
+				cgNum,
+				mute,
+				operation: action.options.operation ?? MuteOperation.Set,
+			})
 			tcpClient.queue(setMute(ChannelType.ControlGroup, cgNum, mute))
 
 			state.setChannel(ChannelType.ControlGroup, cgNum, undefined, mute)
@@ -219,15 +279,27 @@ export function getActions(numberOfInputs, numberOfZones, numberOfControlGroups)
 	actions[ActionId.MuteInputToZone] = {
 		name: 'Mute Input to Zone',
 		options: muteOptions('Input', numberOfInputs).concat(listOptions('Zone', numberOfZones)),
-		callback: (action) => {
-			let inputNum = action.options.mute_number
-			let zoneNum = action.options.number
+		callback: async (action) => {
+			const inputNum = action.options.mute_number
+			const zoneNum = action.options.number
+			const mute = await resolveMute(
+				action,
+				() => requestCurrentSendMute(state, tcpClient, inputNum, zoneNum),
+				`input ${inputNum} to zone ${zoneNum}`,
+			)
+			if (mute === undefined) return
 
-			log.debug(ActionId.MuteInputToZone, { inputNum, zoneNum, infoType: SendInfoType.MUTE })
-			tcpClient.queue(setInputToZoneMute(inputNum, zoneNum, action.options.mute))
+			log.debug(ActionId.MuteInputToZone, {
+				inputNum,
+				zoneNum,
+				mute,
+				operation: action.options.operation ?? MuteOperation.Set,
+				infoType: SendInfoType.MUTE,
+			})
+			tcpClient.queue(setInputToZoneMute(inputNum, zoneNum, mute))
 
 			// manually update internal state
-			state.setSend(ChannelType.Input, inputNum, zoneNum, undefined, action.options.mute)
+			state.setSend(ChannelType.Input, inputNum, zoneNum, undefined, mute)
 			companion.checkFeedbacks(FeedbackId.InputToZoneMute)
 
 			setTimeout(() => {
