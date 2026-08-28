@@ -10,10 +10,10 @@
     colord "^2.9.3"
     tslib "^2.8.1"
 
-"@companion-module/tools@~3.0.0":
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/@companion-module/tools/-/tools-3.0.2.tgz#7d6533cb61bf4b34e42bbbe21ba333477e084eae"
-  integrity sha512-No7XJbWo4BD3Jow7C+eRGKbbEV8eLmxY80n+bnte+Zd05uafPkq+L64fc0/16oGX+de5m9BvZe9MrdYzZHPBfg==
+"@companion-module/tools@~3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@companion-module/tools/-/tools-3.1.0.tgz#6d68cb0dc8933dbf2b25a9cea36377aa3258989f"
+  integrity sha512-Qe9mZrYGdDH4msuMfAYCY1VamErW05CANp7EL6dqEhzdKeqNiOzDx35DLxH6tOV4VUJCND+7cQE7kh4+oCRwyA==
   dependencies:
     "@eslint/js" "^10.0.1"
     esbuild "^0.28.1"
@@ -22,7 +22,8 @@
     eslint-plugin-prettier "^5.5.6"
     find-up "^8.0.0"
     semver "^7.8.4"
-    tar "^7.5.16"
+    spdx-expression-parse "^5.0.0"
+    tar "^7.5.21"
     zx "^8.8.5"
 
 "@esbuild/aix-ppc64@0.28.1":
@@ -394,6 +395,24 @@ semver@^7.8.4:
   resolved "https://registry.yarnpkg.com/semver/-/semver-7.8.5.tgz#39b646037dd50c14fb451e7e4cac58ed8b863f69"
   integrity sha512-Y7/KDsb8LjooZpwaqGyulO6DQlksgCncchHGk+sZIY4SBvUocMBEFH5Ur1fI4dV+Jvl0w6cjvucaIi40puRioA==
 
+spdx-exceptions@^2.1.0:
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/spdx-exceptions/-/spdx-exceptions-2.5.0.tgz#5d607d27fc806f66d7b64a766650fa890f04ed66"
+  integrity sha512-PiU42r+xO4UbUS1buo3LPJkjlO7430Xn5SVAhdpzzsPHsjbYVflnnFdATgabnLude+Cqu25p6N+g2lw/PFsa4w==
+
+spdx-expression-parse@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/spdx-expression-parse/-/spdx-expression-parse-5.0.0.tgz#d337d2cfb7ed5528cbae52bd24a960f5b04c5a41"
+  integrity sha512-vngmw3Rgn+o2arXNbnZaj5UtOEBuWBfvaI+Wc8GFfykIhA5/vdK9/Sp/XkLv63dykz2rxKDvKEHupF5P0FORcQ==
+  dependencies:
+    spdx-exceptions "^2.1.0"
+    spdx-license-ids "^3.0.0"
+
+spdx-license-ids@^3.0.0:
+  version "3.0.23"
+  resolved "https://registry.yarnpkg.com/spdx-license-ids/-/spdx-license-ids-3.0.23.tgz#b069e687b1291a32f126893ed76a27a745ee2133"
+  integrity sha512-CWLcCCH7VLu13TgOH+r8p1O/Znwhqv/dbb6lqWy67G+pT1kHmeD/+V36AVb/vq8QMIQwVShJ6Ssl5FPh0fuSdw==
+
 synckit@^0.11.13:
   version "0.11.13"
   resolved "https://registry.yarnpkg.com/synckit/-/synckit-0.11.13.tgz#062a5ea57d81befc35892f8254de5c567e97c80a"
@@ -406,10 +425,10 @@ tapable@^2.2.0:
   resolved "https://registry.yarnpkg.com/tapable/-/tapable-2.2.1.tgz#1967a73ef4060a82f12ab96af86d52fdb76eeca0"
   integrity sha512-GNzQvQTOIP6RyTfE2Qxb8ZVlNmw0n88vp1szwWRimP02mnTsx3Wtn5qRdqY9w2XduFNUgvOwhNnQsjwCp+kqaQ==
 
-tar@^7.5.16:
-  version "7.5.21"
-  resolved "https://registry.yarnpkg.com/tar/-/tar-7.5.21.tgz#b3405af2eb493523ce4379f531e9ebda0601bc59"
-  integrity sha512-XdhtCvlMywwxpCW8YEq3lOXBJpUPTR2OHHcwLPO3HwsJqOHa2Ok/oJ7ruGzp+JrKoRPVCzJwAdEjqLW/vNRPHA==
+tar@^7.5.21:
+  version "7.5.22"
+  resolved "https://registry.yarnpkg.com/tar/-/tar-7.5.22.tgz#a696f998136e71487dc3f869a85bba2c67971ba9"
+  integrity sha512-MFO/QzvtAOmJbkhOaCTvbGcFN9L9b+JunIsDwaKljSOdcLMea3NJ1k9Usz/rjdfSXTq4dfzfeS7W4p4YOAAHeA==
   dependencies:
     "@isaacs/fs-minipass" "^4.0.0"
     chownr "^3.0.0"
