@@ -48,6 +48,18 @@ export function TCPClient() {
 		notifyIdle()
 	}
 
+	/** Clear connection state on both an orderly end and a socket error. */
+	function handleDisconnect() {
+		const wasConnected = isConnected
+		isConnected = false
+		clearQueue()
+		if (cancelSleep) {
+			cancelSleep()
+			cancelSleep = null
+		}
+		if (wasConnected && onDisconnectCallback) onDisconnectCallback()
+	}
+
 	/**
 	 * Destroys the TCP socket and clears pending transmit requests.
 	 * @returns {void}
@@ -82,16 +94,14 @@ export function TCPClient() {
 			companion.updateStatus(status)
 		})
 
-		midiSocket.on('close', () => {
-			isConnected = false
-			clearQueue()
+		// TCPHelper emits 'end', not the underlying net.Socket's 'close'.
+		midiSocket.on('end', () => {
+			handleDisconnect()
 			log.info('Disconnected', { host, port })
-			if (onDisconnectCallback) {
-				onDisconnectCallback()
-			}
 		})
 
 		midiSocket.on('error', (err) => {
+			handleDisconnect()
 			log.error('SocketError', { message: err.message })
 			companion.updateStatus(InstanceStatus.ConnectionFailure)
 		})
