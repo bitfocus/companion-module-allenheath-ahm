@@ -16,6 +16,47 @@ const log = createLogger('Tracking')
  * visible alongside its current values.
  */
 export function createTracking(state) {
+	const channelMuteWaiters = new Map()
+	const sendMuteWaiters = new Map()
+
+	function createMuteWaiter(waiters, key, timeoutMs) {
+		return new Promise((resolve, reject) => {
+			const waiter = { resolve, timeout: null }
+			waiter.timeout = setTimeout(() => {
+				const pending = waiters.get(key)
+				pending?.delete(waiter)
+				if (pending?.size === 0) waiters.delete(key)
+				reject(new Error('Timed out waiting for mute state'))
+			}, timeoutMs)
+
+			let pending = waiters.get(key)
+			if (!pending) {
+				pending = new Set()
+				waiters.set(key, pending)
+			}
+			pending.add(waiter)
+		})
+	}
+
+	function resolveMuteWaiters(waiters, key, mute) {
+		const pending = waiters.get(key)
+		if (!pending) return
+
+		waiters.delete(key)
+		for (const waiter of pending) {
+			clearTimeout(waiter.timeout)
+			waiter.resolve(mute)
+		}
+	}
+
+	function channelMuteKey(type, chNumber) {
+		return `${type}:${chNumber}`
+	}
+
+	function sendMuteKey(type, fromChNum, toChNum) {
+		return `${type}:${fromChNum}:${toChNum}`
+	}
+
 	/**
 	 * Create an empty channel state without adding a subscription.
 	 * @returns {Object} Newly initialized channel state
@@ -120,7 +161,23 @@ export function createTracking(state) {
 		const channel = state.trackedChannels[type]?.get(chNumber)
 		if (!channel) return
 		if (level !== undefined) channel.level = level
-		if (mute !== undefined) channel.mute = mute
+		if (mute !== undefined) {
+			channel.mute = mute
+			resolveMuteWaiters(channelMuteWaiters, channelMuteKey(type, chNumber), mute)
+		}
+	}
+
+	/**
+	 * Wait for the next mute response for a channel.
+	 * Manual tracking keeps the channel available for later toggle actions and polling.
+	 * @param {ChannelType} type - ChannelType
+	 * @param {Number} chNumber - Channel number (1-indexed)
+	 * @param {Number} timeoutMs - Maximum wait time
+	 * @returns {Promise<Boolean>} The mute value from the next AHM response
+	 */
+	function waitForChannelMute(type, chNumber, timeoutMs = 1000) {
+		addChannel(type, chNumber, MANUAL_ID, MANUAL_ID)
+		return createMuteWaiter(channelMuteWaiters, channelMuteKey(type, chNumber), timeoutMs)
 	}
 
 	/**
@@ -242,8 +299,25 @@ export function createTracking(state) {
 		const send = state.trackedChannels[type]?.get(fromChNum)?.sends.get(toChNum)
 		if (!send) return
 		if (level !== undefined) send.level = level
-		if (mute !== undefined) send.mute = mute
+		if (mute !== undefined) {
+			send.mute = mute
+			resolveMuteWaiters(sendMuteWaiters, sendMuteKey(type, fromChNum, toChNum), mute)
+		}
 		send.initialized = true // future addSend calls will return isNew=false
+	}
+
+	/**
+	 * Wait for the next mute response for a send.
+	 * Manual tracking keeps the send available for later toggle actions and polling.
+	 * @param {ChannelType} type - Type of the source channel
+	 * @param {Number} fromChNum - Source channel number (1-indexed)
+	 * @param {Number} toChNum - Target channel number (1-indexed)
+	 * @param {Number} timeoutMs - Maximum wait time
+	 * @returns {Promise<Boolean>} The mute value from the next AHM response
+	 */
+	function waitForSendMute(type, fromChNum, toChNum, timeoutMs = 1000) {
+		addSend(type, fromChNum, toChNum, MANUAL_ID, MANUAL_ID)
+		return createMuteWaiter(sendMuteWaiters, sendMuteKey(type, fromChNum, toChNum), timeoutMs)
 	}
 
 	/**
@@ -337,12 +411,14 @@ export function createTracking(state) {
 		addChannel,
 		removeChannel,
 		setChannel,
+		waitForChannelMute,
 		getTrackedChannelMap,
 		getLevel,
 		getMute,
 		addSend,
 		removeSend,
 		setSend,
+		waitForSendMute,
 		getTrackedSends,
 		getSendLevel,
 		getSendMute,
